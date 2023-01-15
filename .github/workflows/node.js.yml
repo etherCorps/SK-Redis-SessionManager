@@ -7,44 +7,43 @@ on:
     branches: [ "master" ]
 
 jobs:
-  build:
-    cache-and-install:
-      runs-on: ubuntu-latest
+  node-build-with-tests:
+    runs-on: ubuntu-latest
 
-      steps:
-        - name: Checkout
-          uses: actions/checkout@v3
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
 
-        - name: Install Node.js
-          uses: actions/setup-node@v3
-          with:
-            node-version: 16
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
 
-        - uses: pnpm/action-setup@v2
-          name: Install pnpm
-          id: pnpm-install
-          with:
-            version: 7
-            run_install: false
+      - uses: pnpm/action-setup@v2
+        name: Install pnpm
+        id: pnpm-install
+        with:
+          version: 7
+          run_install: false
 
-        - name: Get pnpm store directory
-          id: pnpm-cache
-          shell: bash
-          run: |
-            echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
 
-        - uses: actions/cache@v3
-          name: Setup pnpm cache
-          with:
-            path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
-            key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-            restore-keys: |
-              ${{ runner.os }}-pnpm-store-
+      - uses: actions/cache@v3
+        name: Setup pnpm cache
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
 
-        - name: Install dependencies
-          run: pnpm install
-        - run: sudo apt-get install -y redis-server
-        - run: pnpm format
-        - run: pnpm lint
-        - run: pnpm build
-        - run: pnpm test:unit
+      - name: Install dependencies
+        run: pnpm install
+      - run: sudo apt-get install -y redis-server
+      - run: pnpm format
+      - run: pnpm lint
+      - run: pnpm build
+      - run: pnpm test:unit
