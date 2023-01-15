@@ -15,15 +15,15 @@ jobs:
       matrix:
         node-version: [16.x, 18.x]
     steps:
-    - uses: actions/checkout@v3
-    - uses: pnpm/action-setup@v2.2.4
-    - name: Use Node.js ${{ matrix.node-version }}
-    - uses: actions/setup-node@v3
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: pnpm
-    - run: sudo apt-get install -y redis-server
-    - run: pnpm format    
-    - run: pnpm lint
-    - run: pnpm build
-    - run: pnpm test
+      - name: Use Node.js ${{ matrix.node-version }}
+      - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v2.2.4
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: pnpm
+      - run: sudo apt-get install -y redis-server
+      - run: pnpm format
+      - run: pnpm lint
+      - run: pnpm build
+      - run: pnpm test
