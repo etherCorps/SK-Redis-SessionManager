@@ -16,7 +16,7 @@ export class RedisSessionStore {
 	private readonly redisClient: RedisClientTypes;
 	private readonly secret: string;
 	private readonly cookieName: string;
-	private readonly uniqueIdGenerator: Function;
+	private readonly uniqueIdGenerator = crypto.randomUUID;
 	private readonly prefix: string;
 	private readonly signedCookies: boolean;
 	private readonly encryptedCookies: boolean;
@@ -115,7 +115,7 @@ export class RedisSessionStore {
 				'Please check your key is a string or uniqueIdGenerator return type'
 			);
 		const keyWithPrefix = this.prefix + uniqueKey;
-		let args = [keyWithPrefix, serializedSessionData];
+		const args = [keyWithPrefix, serializedSessionData];
 		if (this.useTTL && this.ttlSeconds) {
 			args.push('EX', this.ttlSeconds);
 		}
@@ -130,7 +130,10 @@ export class RedisSessionStore {
 
 	async delSession(cookies: Cookies) {
 		const { data, error, message } = await this._validateCookie(cookies);
-		if (error) return this._returnValid(data, error, 'Unable to validate key while deleting');
+		if (error) {
+			console.log('Error in delSession method', message);
+			return this._returnValid(data, error, 'Unable to validate key while deleting');
+		}
 		const deleteData = await this.redisClient.del(`${this.prefix}${data}`);
 		if (!deleteData) return this._returnValid(null, true, `Key not found while deleting`);
 		return this._returnValid(data, false, `Key successfully deleted`);
@@ -138,11 +141,12 @@ export class RedisSessionStore {
 
 	async updateSessionExpiry(cookies: Cookies) {
 		const { data, error, message } = await this._validateCookie(cookies);
-		if (error)
-			return this._returnValid(data, error, 'Unable to validate key while updating session');
+		if (error) console.log('Error in updateSessionExpiry method', message);
+		return this._returnValid(data, error, 'Unable to validate key while updating session');
 		let isExpireTimeUpdated = 0;
-		if (this.ttlSeconds)
-			isExpireTimeUpdated = await this.redisClient.expire(`${this.prefix}${data}`, this.ttlSeconds);
+		if (this.ttlSeconds) {
+			isExpireTimeUpdated = await this.redisClient.expire(`${this.prefix}${data}`, this.ttlSeconds as number);
+		}
 		if (isExpireTimeUpdated) {
 			let finalKey = data;
 			if (this.signedCookies) finalKey = await this._signKey(finalKey);
@@ -153,7 +157,7 @@ export class RedisSessionStore {
 		return this._returnValid(null, true, 'Unable to extended session validity');
 	}
 	async _validateCookie(cookies: Cookies) {
-		let cookiesSessionKey = cookies.get('session');
+		const cookiesSessionKey = cookies.get('session');
 		if (!cookiesSessionKey) return this._returnValid(null, true, 'No session found in cookies.');
 		let verifiedSessionKey = cookiesSessionKey;
 		if (this.signedCookies)
@@ -280,10 +284,6 @@ export class RedisSessionStore {
 	//   })
 	// }
 }
-
-// @ts-ignore
-// return RedisStore
-//
 
 export type RedisClientTypes = ioRedis.Redis | ioRedis.Cluster;
 export interface redisSessionOptions {
