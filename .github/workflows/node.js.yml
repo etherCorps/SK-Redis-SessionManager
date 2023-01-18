@@ -2,9 +2,9 @@ name: Node.js Build Test
 
 on:
   push:
-    branches: [ "master" ]
+    branches: ['master']
   pull_request:
-    branches: [ "master" ]
+    branches: ['master']
 
 jobs:
   node-build-with-tests:
