@@ -124,7 +124,7 @@ export class RedisSessionStore {
 		let finalKey = uniqueKey;
 		if (this.signedCookies) finalKey = await this._signKey(finalKey);
 		if (this.encryptedCookies) finalKey = await this._encrypt(finalKey);
-		cookies.set('session', finalKey, this.cookieOptions);
+		cookies.set(this.cookieName, finalKey, this.cookieOptions);
 		return this._returnValid(finalKey, false, 'Ready get set go');
 	}
 
@@ -136,6 +136,7 @@ export class RedisSessionStore {
 		}
 		const deleteData = await this.redisClient.del(`${this.prefix}${data}`);
 		if (!deleteData) return this._returnValid(null, true, `Key not found while deleting`);
+		cookies.delete(this.cookieName, this.cookieOptions)
 		return this._returnValid(data, false, `Key successfully deleted`);
 	}
 
@@ -151,13 +152,13 @@ export class RedisSessionStore {
 			let finalKey = data;
 			if (this.signedCookies) finalKey = await this._signKey(finalKey);
 			if (this.encryptedCookies) finalKey = await this._encrypt(finalKey);
-			cookies.set('session', finalKey, this.cookieOptions);
+			cookies.set(this.cookieName, finalKey, this.cookieOptions);
 			return this._returnValid(finalKey, false, 'Session validity extended successfully');
 		}
 		return this._returnValid(null, true, 'Unable to extended session validity');
 	}
 	async _validateCookie(cookies: Cookies) {
-		const cookiesSessionKey = cookies.get('session');
+		const cookiesSessionKey = cookies.get(this.cookieName);
 		if (!cookiesSessionKey) return this._returnValid(null, true, 'No session found in cookies.');
 		let verifiedSessionKey = cookiesSessionKey;
 		if (this.signedCookies)
@@ -181,7 +182,7 @@ export class RedisSessionStore {
 			console.log('Error in encrypt method', e);
 			throw new Error('Encryption Error');
 		}
-		const encryptedCookiesValue = JSON.stringify({ encrypted, iv: this.aesIv.toString('hex') });
+		const encryptedCookiesValue = this.serializer.stringify({ encrypted, iv: this.aesIv.toString('hex') });
 		return encryptedCookiesValue;
 	};
 
@@ -207,7 +208,6 @@ export class RedisSessionStore {
 		return { data, error, message };
 	}
 
-	// TODO: Future Plan to add a component that may look like a dashboard which will be going to show all the keys active in redis for session
 	// clear(cb = noop) {
 	//   this._getAllKeys((err, keys) => {
 	//     if (err) return cb(err)
@@ -296,7 +296,7 @@ export interface redisSessionOptions {
 	useTTL?: boolean;
 	renewSessionBeforeExpire?: boolean;
 	renewBeforeSeconds?: number;
-	scanCount?: number;
+	scanCount?: number; // Not using currently future plans to add some functionality
 	serializer?: Serializer | JSON;
 	cookiesOptions?: CookieSerializeOptions;
 }
