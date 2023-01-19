@@ -32,8 +32,9 @@
 		"vite": "^4.0.0",
 		"vitest": "^0.25.3"
 	},
-	"peerDependenciesMeta": {
+	"peerDependencies": {
 		"@sveltejs/kit": "^1.0.0",
+		"svelte": "^3.54.0",
 		"ioredis": "^5.2.5"
 	},
 	"type": "module"

@@ -72,7 +72,7 @@ export class RedisSessionStore {
 		this.renewBeforeSeconds = options.renewBeforeSeconds || defaultRenewBeforeSeconds;
 		this.scanCount = Number(options.scanCount) || 100;
 		this.serializer = options.serializer || JSON;
-		this.cookieOptions = options.cookiesOptions || defaultCookiesOption;
+		this.cookieOptions = { ...defaultCookiesOption, ...options.cookiesOptions };
 		this.ttlSeconds = this.cookieOptions.maxAge;
 		this.aesKey.write(options.secret);
 	}
@@ -128,18 +128,6 @@ export class RedisSessionStore {
 		return this._returnValid(finalKey, false, 'Ready get set go');
 	}
 
-	async delSession(cookies: Cookies) {
-		const { data, error, message } = await this._validateCookie(cookies);
-		if (error) {
-			console.log('Error in delSession method', message);
-			return this._returnValid(data, error, 'Unable to validate key while deleting');
-		}
-		const deleteData = await this.redisClient.del(`${this.prefix}${data}`);
-		if (!deleteData) return this._returnValid(null, true, `Key not found while deleting`);
-		cookies.delete(this.cookieName, this.cookieOptions)
-		return this._returnValid(data, false, `Key successfully deleted`);
-	}
-
 	async updateSessionExpiry(cookies: Cookies) {
 		const { data, error, message } = await this._validateCookie(cookies);
 		if (error) console.log('Error in updateSessionExpiry method', message);
@@ -157,6 +145,24 @@ export class RedisSessionStore {
 		}
 		return this._returnValid(null, true, 'Unable to extended session validity');
 	}
+	async delSession(cookies: Cookies) {
+		const { data, error, message } = await this._validateCookie(cookies);
+		if (error) {
+			console.log('Error in delSession method', message);
+			return this._returnValid(data, error, 'Unable to validate key while deleting');
+		}
+		const deleteData = await this.redisClient.del(`${this.prefix}${data}`);
+		if (!deleteData) return this._returnValid(null, true, `Key not found while deleting`);
+		await this.deleteCookie(cookies);
+		return this._returnValid(data, false, `Key successfully deleted`);
+	}
+
+	async deleteCookie(cookies: Cookies) {
+		const allCookieOptionsCopy = { ...this.cookieOptions };
+		delete allCookieOptionsCopy.maxAge;
+		cookies.delete( this.cookieName, allCookieOptionsCopy );
+	}
+
 	async _validateCookie(cookies: Cookies) {
 		const cookiesSessionKey = cookies.get(this.cookieName);
 		if (!cookiesSessionKey) return this._returnValid(null, true, 'No session found in cookies.');

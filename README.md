@@ -18,9 +18,9 @@
   <p align="center">
     Redis integration in SvelteKit for  Session Management
     <br />
-    @ethercorps/sveltekit-redis-session
-    <br />
-    <a href="https://github.com/etherCorps/SK-Redis-SessionManager"><strong>Explore the docs »</strong></a>
+    <a href="https://www.npmjs.com/package/@ethercorps/sveltekit-redis-session">@ethercorps/sveltekit-redis-session</a>
+    <br /> 
+    <a href="https://github.com/etherCorps/SK-Redis-SessionManager#readme"><strong>Explore the docs »</strong></a>
     <br />
     <br />
     <a href="https://github.com/etherCorps/SK-Redis-SessionManager">View Demo</a>
@@ -183,7 +183,7 @@ This is an example of how to list things you need to use the software and how to
 
 Examples are going to be added soon.
 
-_For more examples, please refer to the [Examples](https://github.com/etherCorps/SK-Redis-SessionManager/tree/main/examples)_
+_For more examples, please refer to the [Examples](https://github.com/etherCorps/SK-Redis-SessionManager/tree/master/examples)_
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
