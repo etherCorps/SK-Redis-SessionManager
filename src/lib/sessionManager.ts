@@ -70,45 +70,54 @@ export class RedisSessionStore {
 		this.useTTL = options.useTTL || true;
 		this.renewSessionBeforeExpire = options.renewSessionBeforeExpire || false;
 		this.renewBeforeSeconds = options.renewBeforeSeconds || defaultRenewBeforeSeconds;
-		this.scanCount = Number(options.scanCount) || 100;
+		this.scanCount = Number( options.scanCount ) || 100;
 		this.serializer = options.serializer || JSON;
 		this.cookieOptions = { ...defaultCookiesOption, ...options.cookiesOptions };
 		this.ttlSeconds = this.cookieOptions.maxAge;
-		this.aesKey.write(options.secret);
+		this.aesKey.write( options.secret );
 	}
 
-	async getSession(cookies: Cookies) {
-		const { data, error, message } = await this._validateCookie(cookies);
-		if (error) return this._returnValid(data, error, message);
-		const sessionData = await this.redisClient.get(`${this.prefix}${data}`);
-		if (!sessionData) return this._returnValid(null, true, 'Invalid session found.');
+	async getSession(
+		cookies: Cookies
+	): Promise<{ data: any; error: boolean; message: string }> {
+		let { data, error, message } = await this._validateCookie( cookies );
+		if (error) return this._returnValid( data, error, message );
+		const sessionData = await this.redisClient.get( `${this.prefix}${data}` );
+		if (!sessionData) return this._returnValid( null, true, "Invalid session found." );
 		let parsedSession;
 		try {
-			parsedSession = this.serializer.parse(sessionData);
+			parsedSession = this.serializer.parse( sessionData );
 		} catch (err) {
-			console.log(err);
-			return this._returnValid(null, true, 'Unable to parse the session data.');
+			console.log( err );
+			return this._returnValid( null, true, "Unable to parse the session data." );
 		}
 		// logic for renew cookies and session before expire
 		if (this.renewSessionBeforeExpire) {
-			const sessionValidity = await this.redisClient.ttl(`${this.prefix}${data}`);
+			const sessionValidity = await this.redisClient.ttl( `${this.prefix}${data}` );
 			if (sessionValidity < this.renewBeforeSeconds && this.ttlSeconds) {
-				this.redisClient.expire(`${this.prefix}${data}`, this.ttlSeconds);
+				const { error, message } = await this.updateSessionExpiry( cookies, true, data );
+				if (error) {
+					console.log( message );
+				}
 			}
 		}
-		return this._returnValid(parsedSession, false, 'Session Data');
+		return this._returnValid( parsedSession, false, "Session Data" ); // return session data
 	}
 
-	async setNewSession(cookies: Cookies, sessionData = {}, key?: string) {
+	async createNewSession(
+		cookies: Cookies,
+		sessionData = {},
+		key?: string
+	): Promise<{ data: any; error: boolean; message: string }> {
 		let serializedSessionData;
 		try {
-			serializedSessionData = this.serializer.stringify(sessionData);
+			serializedSessionData = this.serializer.stringify( sessionData );
 		} catch (er) {
-			console.log('Error in Set Session while serializing', er);
-			return this._returnValid(null, true, 'Unable to stringify session data.');
+			console.log( "Error in Set Session while serializing", er );
+			return this._returnValid( null, true, "Unable to stringify session data." );
 		}
 		const uniqueKey = key || this.uniqueIdGenerator();
-		if (typeof uniqueKey !== 'string')
+		if (typeof uniqueKey !== "string")
 			return this._returnValid(
 				null,
 				true,
@@ -117,89 +126,136 @@ export class RedisSessionStore {
 		const keyWithPrefix = this.prefix + uniqueKey;
 		const args = [keyWithPrefix, serializedSessionData];
 		if (this.useTTL && this.ttlSeconds) {
-			args.push('EX', this.ttlSeconds);
+			args.push( "EX", this.ttlSeconds );
 		}
 		// @ts-ignore
-		this.redisClient.set(args);
+		this.redisClient.set( args );
 		let finalKey = uniqueKey;
-		if (this.signedCookies) finalKey = await this._signKey(finalKey);
-		if (this.encryptedCookies) finalKey = await this._encrypt(finalKey);
-		cookies.set(this.cookieName, finalKey, this.cookieOptions);
-		return this._returnValid(finalKey, false, 'Ready get set go');
+		if (this.signedCookies) finalKey = await this._signKey( finalKey );
+		if (this.encryptedCookies) finalKey = await this._encrypt( finalKey );
+		cookies.set( this.cookieName, finalKey, this.cookieOptions );
+		return this._returnValid( { uniqueKey, finalKey }, false, "Ready get set go" ); // Returns cookie value after setting to cookie
 	}
 
-	async updateSessionExpiry(cookies: Cookies) {
-		const { data, error, message } = await this._validateCookie(cookies);
-		if (error) console.log('Error in updateSessionExpiry method', message);
-		return this._returnValid(data, error, 'Unable to validate key while updating session');
-		let isExpireTimeUpdated = 0;
-		if (this.ttlSeconds) {
-			isExpireTimeUpdated = await this.redisClient.expire(`${this.prefix}${data}`, this.ttlSeconds as number);
+	async updateSessionExpiry(
+		cookies: Cookies,
+		skipValidation: boolean = false,
+		key: string = ""
+	): Promise<{ data: any; error: boolean; message: string }> {
+		let uniqueKey = key;
+		if (!skipValidation) {
+			const { data, error, message } = await this._validateCookie( cookies );
+			if (error) {
+				console.log( "Error in updateSessionExpiry method", message );
+				return this._returnValid( data, error, "Unable to validate key while updating session" );
+			}
+			uniqueKey = data;
+		}
+		let isExpireTimeUpdated = 1;
+		if (this.useTTL && this.ttlSeconds) {
+			isExpireTimeUpdated = await this.redisClient.expire(
+				`${this.prefix}${uniqueKey}`,
+				this.ttlSeconds as number
+			);
 		}
 		if (isExpireTimeUpdated) {
-			let finalKey = data;
-			if (this.signedCookies) finalKey = await this._signKey(finalKey);
-			if (this.encryptedCookies) finalKey = await this._encrypt(finalKey);
-			cookies.set(this.cookieName, finalKey, this.cookieOptions);
-			return this._returnValid(finalKey, false, 'Session validity extended successfully');
+			let finalKey = uniqueKey;
+			if (this.signedCookies) finalKey = await this._signKey( finalKey );
+			if (this.encryptedCookies) finalKey = await this._encrypt( finalKey );
+			cookies.set( this.cookieName, finalKey, this.cookieOptions );
+			return this._returnValid(
+				{ uniqueKey, finalKey },
+				false,
+				"Session validity extended successfully"
+			); // return cookie value after updating expiry
 		}
-		return this._returnValid(null, true, 'Unable to extended session validity');
+		return this._returnValid( null, true, "Unable to extended session validity" );
 	}
-	async delSession(cookies: Cookies) {
-		const { data, error, message } = await this._validateCookie(cookies);
+
+	async delSession(
+		cookies: Cookies
+	): Promise<{ data: any; error: boolean; message: string }> {
+		const { data, error, message } = await this._validateCookie( cookies );
 		if (error) {
-			console.log('Error in delSession method', message);
-			return this._returnValid(data, error, 'Unable to validate key while deleting');
+			console.log( "Error in delSession method", message );
+			return this._returnValid( data, error, "Unable to validate key while deleting" );
 		}
-		const deleteData = await this.redisClient.del(`${this.prefix}${data}`);
-		if (!deleteData) return this._returnValid(null, true, `Key not found while deleting`);
-		await this.deleteCookie(cookies);
-		return this._returnValid(data, false, `Key successfully deleted`);
+		const deleteData = await this.redisClient.del( `${this.prefix}${data}` );
+		if (!deleteData) return this._returnValid( null, true, `Key not found while deleting` );
+		await this.deleteCookie( cookies );
+		return this._returnValid( data, false, `Key successfully deleted` ); // Returns unique key without prefix which is deleted from redis
 	}
 
 	async deleteCookie(cookies: Cookies) {
 		const allCookieOptionsCopy = { ...this.cookieOptions };
 		delete allCookieOptionsCopy.maxAge;
-		cookies.delete( this.cookieName, allCookieOptionsCopy );
+		try {
+			cookies.delete( this.cookieName, allCookieOptionsCopy );
+		} catch (err) {
+			console.log( "error while deleting cookies in deleteCookie method", err );
+		}
 	}
 
 	async _validateCookie(cookies: Cookies) {
-		const cookiesSessionKey = cookies.get(this.cookieName);
-		if (!cookiesSessionKey) return this._returnValid(null, true, 'No session found in cookies.');
+		const cookiesSessionKey = cookies.get( this.cookieName );
+		if (!cookiesSessionKey) return this._returnValid( null, true, "No session found in cookies." );
 		let verifiedSessionKey = cookiesSessionKey;
+		if (this.encryptedCookies) {
+			const { encrypted, iv } = this.serializer.parse( verifiedSessionKey );
+			verifiedSessionKey = (await this._decrypt( { encrypted, iv } )) as string;
+		}
 		if (this.signedCookies)
-			verifiedSessionKey = (await this._verifyKeySignature(cookiesSessionKey)) as string;
+			verifiedSessionKey = (await this._verifyKeySignature( verifiedSessionKey )) as string;
 		if (!verifiedSessionKey)
-			return this._returnValid(null, true, 'Cookies session is not verified.');
-		return this._returnValid(verifiedSessionKey, false, 'Successfully validated cookies');
+			return this._returnValid( null, true, "Cookies session is not verified." );
+		return this._returnValid( verifiedSessionKey, false, "Successfully validated cookies" ); // it returns uniques that will make redis key with prefix
 	}
 	_signKey = async (key: string) => {
 		const newDigest = await crypto.createHmac('sha256', this.secret).update(key).digest('hex');
 		return `${key}.${newDigest}`;
 	};
 
-	_encrypt = async (signedKey: string) => {
-		const cipherAES = crypto.createCipheriv(this.aesAlgorithm, this.aesKey, this.aesIv);
+	_encrypt = async (keyToBeEncrypted: string) => {
+		const cipherAES = crypto.createCipheriv( this.aesAlgorithm, this.aesKey, this.aesIv );
 		let encrypted;
 		try {
-			encrypted = cipherAES.update(signedKey, 'utf8', 'hex');
-			encrypted += cipherAES.final('hex');
+			encrypted = cipherAES.update( keyToBeEncrypted, "utf8", "hex" );
+			encrypted += cipherAES.final( "hex" );
 		} catch (e) {
-			console.log('Error in encrypt method', e);
-			throw new Error('Encryption Error');
+			console.log( "Error in encrypt method", e );
+			throw new Error( "Encryption Error" );
 		}
-		const encryptedCookiesValue = this.serializer.stringify({ encrypted, iv: this.aesIv.toString('hex') });
+		const encryptedCookiesValue = this.serializer.stringify( {
+			encrypted,
+			iv: this.aesIv.toString( "hex" )
+		} );
 		return encryptedCookiesValue;
 	};
 
+	_decrypt = async ({ encrypted, iv }: { encrypted: string; iv: string }) => {
+		try {
+			const decipher = crypto.createDecipheriv(
+				this.aesAlgorithm,
+				this.aesKey,
+				Buffer.from( iv, "hex" )
+			);
+			let decrypted = decipher.update( encrypted, "hex", "utf8" );
+			decrypted += decipher.final( "utf8" );
+			return decrypted as string;
+		} catch (e) {
+			console.log( "decryption error: ", e );
+			return null;
+		}
+	};
+
 	_verifyKeySignature = async (signedCookie: string) => {
-		const valueWithSignature = signedCookie.split('.');
+		const valueWithSignature = signedCookie.split( "." );
 		try {
 			const value = valueWithSignature[0];
 			const signature = valueWithSignature[1];
-			const hmac = crypto.createHmac('sha256', this.secret);
-			hmac.update(value);
-			const expectedSignature = hmac.digest('hex');
+			const hmac = crypto.createHmac( "sha256", this.secret );
+			hmac.update( value );
+			const expectedSignature = hmac.digest( "hex" );
 			const isValidSignature = crypto.timingSafeEqual(
 				Buffer.from(signature, 'hex'),
 				Buffer.from(expectedSignature, 'hex')
@@ -302,7 +358,7 @@ export interface redisSessionOptions {
 	useTTL?: boolean;
 	renewSessionBeforeExpire?: boolean;
 	renewBeforeSeconds?: number;
-	scanCount?: number; // Not using currently future plans to add some functionality
+	scanCount?: number; // currently not using, future plans to add some functionality
 	serializer?: Serializer | JSON;
 	cookiesOptions?: CookieSerializeOptions;
 }

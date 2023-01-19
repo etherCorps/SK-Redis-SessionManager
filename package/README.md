@@ -23,7 +23,7 @@
     <a href="https://github.com/etherCorps/SK-Redis-SessionManager#readme"><strong>Explore the docs »</strong></a>
     <br />
     <br />
-    <a href="https://github.com/etherCorps/SK-Redis-SessionManager">View Demo</a>
+    <a href="https://sveltekit-redis-session-manager.vercel.app">View Demo</a>
     ·
     <a href="https://github.com/etherCorps/SK-Redis-SessionManager/issues">Report Bug</a>
     ·
@@ -98,81 +98,84 @@ This is an example of how to list things you need to use the software and how to
 ### Setup
 
 1. First we need to make instance of it to use everywhere in project.
-    ```ts
-    import { RedisSessionStore } from "@ethercorps/sveletkit-redis-session";
-    import Redis from "ioredis";
-    export const sessionManager = new RedisSessionStore({
-      redisClient: new Redis(),  // Required A pre-initiated redis client 
-      secret: 'your-secret-key', // Required A secret key for encryption and other things,
-      cookieName: 'session',  // CookieName to be saved in cookies for browser Default session
-      prefix: 'sk-session',  // Prefix for Redis Keys Default sk-session
-      signed: true, // Do you want to sign your cookies Default true
-      encrypted: false,  // Do you want to encrypt your cookies using 'aes-256-cbc' algorithm Default false
-      useTTL: true, // Do you wanna use redis's Expire key functionality Default false
-      renewSessionBeforeExpire: false, // Do you wanna update session expire time in built function Default false
-      renewBeforeSeconds: 30 * 60, // If renewSessionBeforeExpire is true define your renew before time in seconds Default 30 minutes
-      serializer: JSON, // You can define your own serializer functions to stringify and parse sessionData for redis Default JSON
-      cookiesOptions: {
-        path: '/',
-        httpOnly: true,
-        sameSite: 'strict',
-        secure: !dev, // From SvelteKit "$app/environment"
-        maxAge: 60 * 60 * 24 // You have to define time in seconds and it's also used for redis key expiry time
-      } // You have more options these are default used in package for more check sveltekit CookieSerializeOptions type.
-   })
-    ```
+   ```ts
+   import { RedisSessionStore } from '@ethercorps/sveletkit-redis-session';
+   import Redis from 'ioredis';
+   export const sessionManager = new RedisSessionStore({
+   	redisClient: new Redis(), // Required A pre-initiated redis client
+   	secret: 'your-secret-key', // Required A secret key for encryption and other things,
+   	cookieName: 'session', // CookieName to be saved in cookies for browser Default session
+   	prefix: 'sk-session', // Prefix for Redis Keys Default sk-session
+   	signed: true, // Do you want to sign your cookies Default true
+   	encrypted: false, // Do you want to encrypt your cookies using 'aes-256-cbc' algorithm Default false
+   	useTTL: true, // Do you wanna use redis's Expire key functionality Default false
+   	renewSessionBeforeExpire: false, // Do you wanna update session expire time in built function Default false
+   	renewBeforeSeconds: 30 * 60, // If renewSessionBeforeExpire is true define your renew before time in seconds Default 30 minutes
+   	serializer: JSON, // You can define your own serializer functions to stringify and parse sessionData for redis Default JSON
+   	cookiesOptions: {
+   		path: '/',
+   		httpOnly: true,
+   		sameSite: 'strict',
+   		secure: !dev, // From SvelteKit "$app/environment"
+   		maxAge: 60 * 60 * 24 // You have to define time in seconds and it's also used for redis key expiry time
+   	} // You have more options these are default used in package for more check sveltekit CookieSerializeOptions type.
+   });
+   ```
    > These are the default config example you can use as per your need and make it better for your use.
-    I have written an article to explain more about this package <a href="">link for article</a>.
-   
+   > I have written an article to explain more about this package <a href="">link for article</a>.
 2. To create new session and add cookies for user after authentication
-    ```ts
+
+   ```ts
    // Example it's a +page.server.ts
-    import sessionManager from "sessionManagerFile"
-   
-    export const actions: Actions = {
-    login: async ({req, cookies, locals}) => {
-      const formdata = await request.formData()
-      // Form validation && user validation
-      const { data, error, message } = sessionManager.setNewSession(cookies, userData)
-      // data is the value we added to cookies, check for error which is a boolean and message.
-      /* add data to locals too for accessing data from client */
-      throw redirect(307, '/dashboard');
-      }
-   }
-    ```
+   import sessionManager from 'sessionManagerFile';
+
+   export const actions: Actions = {
+   	login: async ({ req, cookies, locals }) => {
+   		const formdata = await request.formData();
+   		// Form validation && user validation
+   		const { data, error, message } = sessionManager.setNewSession(cookies, userData);
+   		// data is the value we added to cookies, check for error which is a boolean and message.
+   		/* add data to locals too for accessing data from client */
+   		throw redirect(307, '/dashboard');
+   	}
+   };
+   ```
+
 3. To get session data for the cookie
+
    ```ts
    /* hooks.server.ts */
-   import sessionManager from "sessionManagerFile"
-   
+   import sessionManager from 'sessionManagerFile';
+
    export const handle: Handle = async ({ event, resolve }) => {
-   /* your validation logic */
-   const { data, error, message } = sessionManager.getSession(event.cookies)
-   // data is the User session data we saved to redis while login, check for error which is a boolean and message.
-   /* do error check and then set data to locals as per your logic */
-   }
-  
+   	/* your validation logic */
+   	const { data, error, message } = sessionManager.getSession(event.cookies);
+   	// data is the User session data we saved to redis while login, check for error which is a boolean and message.
+   	/* do error check and then set data to locals as per your logic */
+   };
    ```
+
 4. To update session expiry in redis and cookies
-    ```ts
+   ```ts
    // in any server side file or endpoint where you can access browser cookies
-    import sessionManager from "sessionManagerFile"
-    const { data, error, message } = await sessionManager.updateSessionExpiry(cookies)
-    // data is going to be null or key which is updated, error is a boolean value and message a string
-    ```
+   import sessionManager from 'sessionManagerFile';
+   const { data, error, message } = await sessionManager.updateSessionExpiry(cookies);
+   // data is going to be null or key which is updated, error is a boolean value and message a string
+   ```
 5. To delete session from redis and cookie from browser
+
    ```ts
    // Example it's a +page.server.ts
-   
-   import sessionManager from "sessionManagerFile"
+
+   import sessionManager from 'sessionManagerFile';
    export const actions: Actions = {
-     logout: async ({cookies, locals}) => {
-       const { data, error, message } = await sessionManager.delSession(cookies)
-       // data is the value we deleted key, check for error which is a boolean and message.
-       /* clear your locals too */
-       throw redirect(307, '/login');
-     }
-   }
+   	logout: async ({ cookies, locals }) => {
+   		const { data, error, message } = await sessionManager.delSession(cookies);
+   		// data is the value we deleted key, check for error which is a boolean and message.
+   		/* clear your locals too */
+   		throw redirect(307, '/login');
+   	}
+   };
    ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -198,33 +201,37 @@ features (and known issues).
 
 <!-- CONTRIBUTING -->
 
-[//]: # (## Contributing)
+[//]: # '## Contributing'
 
-[//]: # ()
-[//]: # (Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any)
+[//]: #
 
-[//]: # (contributions you make are **greatly appreciated**.)
+[//]: # 'Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any'
 
-[//]: # ()
-[//]: # (If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also)
+[//]: # 'contributions you make are **greatly appreciated**.'
 
-[//]: # (simply open an issue with the tag "enhancement".)
+[//]: #
 
-[//]: # (Don't forget to give the project a star! Thanks again!)
+[//]: # 'If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also'
 
-[//]: # ()
-[//]: # (1. Fork the Project)
+[//]: # 'simply open an issue with the tag "enhancement".'
 
-[//]: # (2. Create your Feature Branch &#40;`git checkout -b feature/AmazingFeature`&#41;)
+[//]: # "Don't forget to give the project a star! Thanks again!"
 
-[//]: # (3. Commit your Changes &#40;`git commit -m 'Add some AmazingFeature'`&#41;)
+[//]: #
 
-[//]: # (4. Push to the Branch &#40;`git push origin feature/AmazingFeature`&#41;)
+[//]: # '1. Fork the Project'
 
-[//]: # (5. Open a Pull Request)
+[//]: # '2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)'
 
-[//]: # ()
-[//]: # (<p align="right">&#40;<a href="#readme-top">back to top</a>&#41;</p>)
+[//]: # "3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)"
+
+[//]: # '4. Push to the Branch (`git push origin feature/AmazingFeature`)'
+
+[//]: # '5. Open a Pull Request'
+
+[//]: #
+
+[//]: # '<p align="right">(<a href="#readme-top">back to top</a>)</p>'
 
 <!-- LICENSE -->
 

@@ -7,8 +7,8 @@ declare global {
 		interface Locals {
 			isUserLoggedIn: boolean;
 			user: {
-				email: string;
-			} | null;
+        email: any;
+      } | null;
 		}
 		// interface PageData {}
 		// interface Platform {}

@@ -24,9 +24,9 @@ export const actions: Actions = {
 			});
 		}
 
-		const { data, error, message } = await sessionManger.setNewSession(cookies, {
-			email: formData.get('email')
-		});
+		const { data, error, message } = await sessionManger.createNewSession( cookies, {
+			email: formData.get( "email" )
+		} );
 		if (error) {
 			console.log(message);
 			return fail(400, {

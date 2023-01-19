@@ -15,13 +15,13 @@
 	$: show = data.isAuthenticated;
 
 	const logoutUser = async () => {
-		const response = await fetch('/logout', {
-			method: 'POST',
-			body: JSON.stringify({ email: data.user.email }),
+		const response = await fetch( "/api/logout", {
+			method: "POST",
+			body: JSON.stringify( { email: data.user.email } ),
 			headers: {
-				'content-type': 'application/json'
+				"content-type": "application/json"
 			}
-		});
+		} );
 		const responseData = await response.json();
 		show = responseData.loggedIn;
 	};
