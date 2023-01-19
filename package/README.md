@@ -20,7 +20,7 @@
     <br />
     <a href="https://www.npmjs.com/package/@ethercorps/sveltekit-redis-session">@ethercorps/sveltekit-redis-session</a>
     <br /> 
-    <a href="https://github.com/etherCorps/SK-Redis-SessionManager#readme"><strong>Explore the docs »</strong></a>
+    <a href="https://dev.to/theether0/redis-integration-in-sveltekit-a-game-changer-for-session-management-84i"><strong>Explore the docs »</strong></a>
     <br />
     <br />
     <a href="https://sveltekit-redis-session-manager.vercel.app">View Demo</a>
@@ -30,7 +30,6 @@
     <a href="https://github.com/etherCorps/SK-Redis-SessionManager/issues">Request Feature</a>
   </p>
 </div>
-
 <!-- TABLE OF CONTENTS -->
 <details>
   <summary>Table of Contents</summary>
@@ -96,6 +95,9 @@ This is an example of how to list things you need to use the software and how to
   ```
 
 ### Setup
+
+<a href="https://dev.to/theether0/redis-integration-in-sveltekit-a-game-changer-for-session-management-84i">Guide to how
+to use @ethercorps/sveletkit-redis-session</a>
 
 1. First we need to make instance of it to use everywhere in project.
    ```ts
