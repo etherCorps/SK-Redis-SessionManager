@@ -93,23 +93,23 @@ export class RedisSessionStore {
         return this._returnValid(parsedSession, false, "Session Data"); // return session data
     }
     async createNewSession(cookies, sessionData = {}, key) {
-        let serializedSessionData;
+      let serializedSessionData;
       try {
         serializedSessionData = this.serializer.stringify(sessionData);
       } catch (er) {
         console.log("Error in Set Session while serializing", er);
         return this._returnValid(null, true, "Unable to stringify session data.");
       }
-        const uniqueKey = key || this.uniqueIdGenerator();
-        if (typeof uniqueKey !== "string")
-          return this._returnValid(null, true, "Please check your key is a string or uniqueIdGenerator return type");
-        const keyWithPrefix = this.prefix + uniqueKey;
-        const args = [keyWithPrefix, serializedSessionData];
-        if (this.useTTL && this.ttlSeconds) {
-            args.push("EX", this.ttlSeconds);
-        }
-        // @ts-ignore
-        this.redisClient.set(args);
+      const uniqueKey = key || this.uniqueIdGenerator();
+      if (typeof uniqueKey !== "string")
+        return this._returnValid(null, true, "Please check your key is a string or uniqueIdGenerator return type");
+      const keyWithPrefix = this.prefix + uniqueKey;
+      const args = [keyWithPrefix, serializedSessionData];
+      if (this.useTTL && this.ttlSeconds) {
+        args.push("EX", this.ttlSeconds);
+      }
+      // @ts-ignore
+      this.redisClient.set(args);
         let finalKey = uniqueKey;
         if (this.signedCookies)
             finalKey = await this._signKey(finalKey);
@@ -156,8 +156,8 @@ export class RedisSessionStore {
         return this._returnValid(data, false, `Key successfully deleted`); // Returns unique key without prefix which is deleted from redis
     }
     async deleteCookie(cookies) {
-        const allCookieOptionsCopy = { ...this.cookieOptions };
-        delete allCookieOptionsCopy.maxAge;
+      const allCookieOptionsCopy = { ...this.cookieOptions };
+      delete allCookieOptionsCopy.maxAge;
       try {
         cookies.delete(this.cookieName, allCookieOptionsCopy);
       } catch (err) {
@@ -184,8 +184,8 @@ export class RedisSessionStore {
         return `${key}.${newDigest}`;
     };
     _encrypt = async (keyToBeEncrypted) => {
-        const cipherAES = crypto.createCipheriv(this.aesAlgorithm, this.aesKey, this.aesIv);
-        let encrypted;
+      const cipherAES = crypto.createCipheriv(this.aesAlgorithm, this.aesKey, this.aesIv);
+      let encrypted;
       try {
         encrypted = cipherAES.update(keyToBeEncrypted, "utf8", "hex");
         encrypted += cipherAES.final("hex");
@@ -193,11 +193,11 @@ export class RedisSessionStore {
         console.log("Error in encrypt method", e);
         throw new Error("Encryption Error");
       }
-        const encryptedCookiesValue = this.serializer.stringify({
-            encrypted,
-            iv: this.aesIv.toString("hex")
-        });
-        return encryptedCookiesValue;
+      const encryptedCookiesValue = this.serializer.stringify({
+        encrypted,
+        iv: this.aesIv.toString("hex")
+      });
+      return encryptedCookiesValue;
     };
     _decrypt = async ({ encrypted, iv }) => {
       try {
@@ -213,16 +213,16 @@ export class RedisSessionStore {
     _verifyKeySignature = async (signedCookie) => {
         const valueWithSignature = signedCookie.split(".");
         try {
-            const value = valueWithSignature[0];
-            const signature = valueWithSignature[1];
-            const hmac = crypto.createHmac("sha256", this.secret);
-            hmac.update(value);
+          const value = valueWithSignature[0];
+          const signature = valueWithSignature[1];
+          const hmac = crypto.createHmac("sha256", this.secret);
+          hmac.update(value);
           const expectedSignature = hmac.digest("hex");
           const isValidSignature = crypto.timingSafeEqual(Buffer.from(signature, "hex"), Buffer.from(expectedSignature, "hex"));
-            if (!isValidSignature) {
-                return null;
-            }
-            return value;
+          if (!isValidSignature) {
+            return null;
+          }
+          return value;
         } catch (e) {
         }
     };
