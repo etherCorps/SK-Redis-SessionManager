@@ -1,6 +1,7 @@
 {
 	"name": "@ethercorps/sveletkit-redis-session",
 	"version": "0.1.1",
+	"private": false,
 	"scripts": {
 		"dev": "vite dev",
 		"build": "svelte-kit sync && svelte-package",
@@ -37,5 +38,16 @@
 		"svelte": "^3.54.0",
 		"ioredis": "^5.2.5"
 	},
-	"type": "module"
+	"type": "module",
+	"keywords": [
+		"sveltekit-redis-session",
+		"sveltekit redis session manager",
+		"sveltekit redis",
+		"sveltekit session manager",
+		"sveltekit session",
+		"@ethercorps/sveltekit-redis-session"
+	],
+	"license": "MIT",
+	"repository": "https://github.com/etherCorps/SK-Redis-SessionManager",
+	"homepage": "https://github.com/etherCorps/SK-Redis-SessionManager#readme"
 }

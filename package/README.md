@@ -10,7 +10,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/etherCorps/SK-Redis-SessionManager">
-    <img src="https://sveltekit-redis-session-manager.vercel.app/logo.png" alt="Logo" width="80" height="80">
+    <img src="https://sveltekit-redis-session-manager.vercel.app/logo.svg" alt="Logo" width="80" height="80">
   </a>
 
 <h3 align="center">SvelteKit Redis Session Manager</h3>
