@@ -18,41 +18,33 @@ export declare class RedisSessionStore {
     private readonly aesAlgorithm;
     private readonly aesKey;
     private readonly aesIv;
-
     constructor(options: redisSessionOptions);
-
     getSession(cookies: Cookies): Promise<{
         data: any;
         error: boolean;
         message: string;
     }>;
-
     createNewSession(cookies: Cookies, sessionData?: {}, key?: string): Promise<{
         data: any;
         error: boolean;
         message: string;
     }>;
-
     updateSessionExpiry(cookies: Cookies, skipValidation?: boolean, key?: string): Promise<{
         data: any;
         error: boolean;
         message: string;
     }>;
-
     delSession(cookies: Cookies): Promise<{
         data: any;
         error: boolean;
         message: string;
     }>;
-
     deleteCookie(cookies: Cookies): Promise<void>;
-
     _validateCookie(cookies: Cookies): Promise<{
         data: any;
         error: boolean;
         message: string;
     }>;
-
     _signKey: (key: string) => Promise<string>;
     _encrypt: (keyToBeEncrypted: string) => Promise<any>;
     _decrypt: ({ encrypted, iv }: {
@@ -60,7 +52,6 @@ export declare class RedisSessionStore {
         iv: string;
     }) => Promise<string | null>;
     _verifyKeySignature: (signedCookie: string) => Promise<string | null | undefined>;
-
     _returnValid(data: any, error: boolean, message: string): {
         data: any;
         error: boolean;

@@ -75,10 +75,10 @@ export class RedisSessionStore {
             return this._returnValid(null, true, "Invalid session found.");
         let parsedSession;
         try {
-            parsedSession = this.serializer.parse(sessionData);
+          parsedSession = this.serializer.parse(sessionData);
         } catch (err) {
-            console.log(err);
-            return this._returnValid(null, true, "Unable to parse the session data.");
+          console.log(err);
+          return this._returnValid(null, true, "Unable to parse the session data.");
         }
         // logic for renew cookies and session before expire
         if (this.renewSessionBeforeExpire) {
@@ -92,18 +92,17 @@ export class RedisSessionStore {
         }
         return this._returnValid(parsedSession, false, "Session Data"); // return session data
     }
-
     async createNewSession(cookies, sessionData = {}, key) {
         let serializedSessionData;
-        try {
-            serializedSessionData = this.serializer.stringify(sessionData);
-        } catch (er) {
-            console.log("Error in Set Session while serializing", er);
-            return this._returnValid(null, true, "Unable to stringify session data.");
-        }
+      try {
+        serializedSessionData = this.serializer.stringify(sessionData);
+      } catch (er) {
+        console.log("Error in Set Session while serializing", er);
+        return this._returnValid(null, true, "Unable to stringify session data.");
+      }
         const uniqueKey = key || this.uniqueIdGenerator();
         if (typeof uniqueKey !== "string")
-            return this._returnValid(null, true, "Please check your key is a string or uniqueIdGenerator return type");
+          return this._returnValid(null, true, "Please check your key is a string or uniqueIdGenerator return type");
         const keyWithPrefix = this.prefix + uniqueKey;
         const args = [keyWithPrefix, serializedSessionData];
         if (this.useTTL && this.ttlSeconds) {
@@ -119,7 +118,6 @@ export class RedisSessionStore {
         cookies.set(this.cookieName, finalKey, this.cookieOptions);
         return this._returnValid({ uniqueKey, finalKey }, false, "Ready get set go"); // Returns cookie value after setting to cookie
     }
-
     async updateSessionExpiry(cookies, skipValidation = false, key = "") {
         let uniqueKey = key;
         if (!skipValidation) {
@@ -145,7 +143,6 @@ export class RedisSessionStore {
         }
         return this._returnValid(null, true, "Unable to extended session validity");
     }
-
     async delSession(cookies) {
         const { data, error, message } = await this._validateCookie(cookies);
         if (error) {
@@ -161,11 +158,11 @@ export class RedisSessionStore {
     async deleteCookie(cookies) {
         const allCookieOptionsCopy = { ...this.cookieOptions };
         delete allCookieOptionsCopy.maxAge;
-        try {
-            cookies.delete(this.cookieName, allCookieOptionsCopy);
-        } catch (err) {
-            console.log("error while deleting cookies in deleteCookie method", err);
-        }
+      try {
+        cookies.delete(this.cookieName, allCookieOptionsCopy);
+      } catch (err) {
+        console.log("error while deleting cookies in deleteCookie method", err);
+      }
     }
     async _validateCookie(cookies) {
         const cookiesSessionKey = cookies.get(this.cookieName);
@@ -182,21 +179,20 @@ export class RedisSessionStore {
             return this._returnValid(null, true, "Cookies session is not verified.");
         return this._returnValid(verifiedSessionKey, false, "Successfully validated cookies"); // it returns uniques that will make redis key with prefix
     }
-
     _signKey = async (key) => {
-        const newDigest = await crypto.createHmac("sha256", this.secret).update(key).digest("hex");
+      const newDigest = await crypto.createHmac("sha256", this.secret).update(key).digest("hex");
         return `${key}.${newDigest}`;
     };
     _encrypt = async (keyToBeEncrypted) => {
         const cipherAES = crypto.createCipheriv(this.aesAlgorithm, this.aesKey, this.aesIv);
         let encrypted;
-        try {
-            encrypted = cipherAES.update(keyToBeEncrypted, "utf8", "hex");
-            encrypted += cipherAES.final("hex");
-        } catch (e) {
-            console.log("Error in encrypt method", e);
-            throw new Error("Encryption Error");
-        }
+      try {
+        encrypted = cipherAES.update(keyToBeEncrypted, "utf8", "hex");
+        encrypted += cipherAES.final("hex");
+      } catch (e) {
+        console.log("Error in encrypt method", e);
+        throw new Error("Encryption Error");
+      }
         const encryptedCookiesValue = this.serializer.stringify({
             encrypted,
             iv: this.aesIv.toString("hex")
@@ -204,15 +200,15 @@ export class RedisSessionStore {
         return encryptedCookiesValue;
     };
     _decrypt = async ({ encrypted, iv }) => {
-        try {
-            const decipher = crypto.createDecipheriv(this.aesAlgorithm, this.aesKey, Buffer.from(iv, "hex"));
-            let decrypted = decipher.update(encrypted, "hex", "utf8");
-            decrypted += decipher.final("utf8");
-            return decrypted;
-        } catch (e) {
-            console.log("decryption error: ", e);
-            return null;
-        }
+      try {
+        const decipher = crypto.createDecipheriv(this.aesAlgorithm, this.aesKey, Buffer.from(iv, "hex"));
+        let decrypted = decipher.update(encrypted, "hex", "utf8");
+        decrypted += decipher.final("utf8");
+        return decrypted;
+      } catch (e) {
+        console.log("decryption error: ", e);
+        return null;
+      }
     };
     _verifyKeySignature = async (signedCookie) => {
         const valueWithSignature = signedCookie.split(".");
@@ -221,8 +217,8 @@ export class RedisSessionStore {
             const signature = valueWithSignature[1];
             const hmac = crypto.createHmac("sha256", this.secret);
             hmac.update(value);
-            const expectedSignature = hmac.digest("hex");
-            const isValidSignature = crypto.timingSafeEqual(Buffer.from(signature, "hex"), Buffer.from(expectedSignature, "hex"));
+          const expectedSignature = hmac.digest("hex");
+          const isValidSignature = crypto.timingSafeEqual(Buffer.from(signature, "hex"), Buffer.from(expectedSignature, "hex"));
             if (!isValidSignature) {
                 return null;
             }
@@ -230,7 +226,6 @@ export class RedisSessionStore {
         } catch (e) {
         }
     };
-
     _returnValid(data, error, message) {
         return { data, error, message };
     }

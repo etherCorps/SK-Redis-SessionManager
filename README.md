@@ -10,7 +10,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/etherCorps/SK-Redis-SessionManager">
-    <img src="static/Logo31.svg" alt="Logo" width="80" height="80">
+    <img src="https://sveltekit-redis-session-manager.vercel.app/logo.png" alt="Logo" width="80" height="80">
   </a>
 
 <h3 align="center">SvelteKit Redis Session Manager</h3>
@@ -135,7 +135,7 @@ to use @ethercorps/sveletkit-redis-session</a>
    	login: async ({ req, cookies, locals }) => {
    		const formdata = await request.formData();
    		// Form validation && user validation
-   		const { data, error, message } = sessionManager.setNewSession(cookies, userData);
+   		const { data, error, message } = sessionManager.createNewSession(cookies, userData);
    		// data is the value we added to cookies, check for error which is a boolean and message.
    		/* add data to locals too for accessing data from client */
    		throw redirect(307, '/dashboard');
