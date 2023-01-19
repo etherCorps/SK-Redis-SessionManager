@@ -1,6 +1,6 @@
 import { json, redirect } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { sessionManger } from '../session';
+import { sessionManger } from '$lib/session';
 
 export const POST = (async ({ request, locals, cookies }) => {
 	if (locals && locals.isUserLoggedIn) {

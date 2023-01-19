@@ -1,5 +1,5 @@
 import type { Handle } from '@sveltejs/kit';
-import { sessionManger } from './routes/session';
+import { sessionManger } from '$lib/session';
 import { redirect } from '@sveltejs/kit';
 
 export const handle: Handle = async ({ event, resolve }) => {

@@ -1,6 +1,6 @@
 import type { Actions } from '@sveltejs/kit';
 import { fail } from '@sveltejs/kit';
-import { sessionManger } from './session';
+import { sessionManger } from '$lib/session';
 import type { PageServerLoad } from './$types';
 
 export let ssr = true;
