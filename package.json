@@ -1,5 +1,5 @@
 {
-	"name": "@ethercorps/sveletkit-redis-session",
+	"name": "@ethercorps/sveltekit-redis-session",
 	"version": "0.1.2",
 	"private": false,
 	"scripts": {
