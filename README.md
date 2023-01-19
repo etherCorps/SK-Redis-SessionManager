@@ -72,7 +72,7 @@ Overall, "sveltekit-redis-session" is choice for managing user sessions in any S
 
 ### Built With
 
-- [![SvelteKit][SveletKit]][SvelteKit-url]
+- [![SvelteKit][SvelteKit]][SvelteKit-url]
 - [![Redis][Redis]][Redis-url]
 - [![Svelte][Svelte.dev]][Svelte-url]
 
@@ -91,17 +91,17 @@ This is an example of how to list things you need to use the software and how to
 
 - Install the sveltekit-redis-session
   ```sh
-  pnpm i @ethercorps/sveletkit-redis-session
+  pnpm i @ethercorps/SvelteKit-redis-session
   ```
 
 ### Setup
 
 <a href="https://dev.to/theether0/redis-integration-in-sveltekit-a-game-changer-for-session-management-84i">Guide to how
-to use @ethercorps/sveletkit-redis-session</a>
+to use @ethercorps/SvelteKit-redis-session</a>
 
 1. First we need to make instance of it to use everywhere in project.
    ```ts
-   import { RedisSessionStore } from '@ethercorps/sveletkit-redis-session';
+   import { RedisSessionStore } from '@ethercorps/SvelteKit-redis-session';
    import Redis from 'ioredis';
    export const sessionManager = new RedisSessionStore({
    	redisClient: new Redis(), // Required A pre-initiated redis client
@@ -279,8 +279,11 @@ Link: [https://github.com/etherCorps/SK-Redis-SessionManager](https://github.com
 [license-url]: https://github.com/etherCorps/SK-Redis-SessionManager/blob/master/LICENSE.txt
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://linkedin.com/in/theether0
+
 [product-screenshot]: static/screenshot.png
-[SveletKit]: https://img.shields.io/badge/sveltekit-000000?style=for-the-badge&logo=svelte&logoColor=white
+
+[SvelteKit]: https://img.shields.io/badge/sveltekit-000000?style=for-the-badge&logo=svelte&logoColor=white
+
 [SvelteKit-url]: https://kit.svelte.dev
 [Redis]: https://img.shields.io/badge/Redis-DD0031?style=for-the-badge&logo=Redis&logoColor=white
 [Redis-url]: https://redis.io/
