@@ -10,7 +10,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/etherCorps/SK-Redis-SessionManager">
-    <img src="static/Logo31.svg" alt="Logo" width="80" height="80">
+    <img src="https://github.com/etherCorps/SK-Redis-SessionManager/blob/master/static/Logo31.svg" alt="Logo" width="80" height="80">
   </a>
 
 <h3 align="center">SvelteKit Redis Session Manager</h3>
@@ -91,8 +91,8 @@ This is an example of how to list things you need to use the software and how to
 
 - Install the sveltekit-redis-session
   ```sh
-  pnpm i @ethercorps/sveletkit-redis-session
-  ```
+   pnpm i @ethercorps/sveletkit-redis-session 
+   ```
 
 ### Setup
 
