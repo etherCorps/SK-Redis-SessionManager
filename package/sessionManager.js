@@ -110,13 +110,13 @@ export class RedisSessionStore {
       }
       // @ts-ignore
       this.redisClient.set(args);
-        let finalKey = uniqueKey;
-        if (this.signedCookies)
-            finalKey = await this._signKey(finalKey);
-        if (this.encryptedCookies)
-            finalKey = await this._encrypt(finalKey);
-        cookies.set(this.cookieName, finalKey, this.cookieOptions);
-        return this._returnValid({ uniqueKey, finalKey }, false, "Ready get set go"); // Returns cookie value after setting to cookie
+      let finalKey = uniqueKey;
+      if (this.signedCookies)
+        finalKey = await this._signKey(finalKey);
+      if (this.encryptedCookies)
+        finalKey = await this._encrypt(finalKey);
+      cookies.set(this.cookieName, finalKey, this.cookieOptions);
+      return this._returnValid({ uniqueKey, finalKey }, false, "Ready get set go"); // Returns cookie value after setting to cookie
     }
     async updateSessionExpiry(cookies, skipValidation = false, key = "") {
         let uniqueKey = key;
