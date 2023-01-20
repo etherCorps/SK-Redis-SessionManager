@@ -39,7 +39,7 @@
 		"ioredis": "^5.2.5"
 	},
 	"publishConfig": {
-		"registry": "https://npm.pkg.github.com/@ethercorps"
+		"registry": "https://npm.pkg.github.com/"
 	},
 	"type": "module",
 	"keywords": [
