@@ -38,6 +38,9 @@
 		"svelte": "^3.54.0",
 		"ioredis": "^5.2.5"
 	},
+	"publishConfig": {
+		"registry": "https://npm.pkg.github.com/@dalenguyen"
+	},
 	"type": "module",
 	"keywords": [
 		"sveltekit-redis-session",
