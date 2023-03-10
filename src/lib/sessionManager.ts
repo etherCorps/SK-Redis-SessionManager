@@ -80,7 +80,7 @@ export class RedisSessionStore {
 	async getSession(
 		cookies: Cookies
 	): Promise<{ data: any; error: boolean; message: string }> {
-		let { data, error, message } = await this._validateCookie( cookies );
+		const { data, error, message } = await this._validateCookie( cookies );
 		if (error) return this._returnValid( data, error, message );
 		const sessionData = await this.redisClient.get( `${this.prefix}${data}` );
 		if (!sessionData) return this._returnValid( null, true, "Invalid session found." );
@@ -139,8 +139,8 @@ export class RedisSessionStore {
 
 	async updateSessionExpiry(
 		cookies: Cookies,
-		skipValidation: boolean = false,
-		key: string = ""
+		skipValidation = false,
+		key = ""
 	): Promise<{ data: any; error: boolean; message: string }> {
 		let uniqueKey = key;
 		if (!skipValidation) {
@@ -195,6 +195,29 @@ export class RedisSessionStore {
 			console.log( "error while deleting cookies in deleteCookie method", err );
 		}
 	}
+
+	 async updateCookieData(cookies: Cookies, sessionData = {}): Promise<{ data: any; error: boolean; message: string }> {
+		 const { data, error, message } = await this._validateCookie( cookies );
+		 if (error) {
+			 console.log( "Error in updateSessionExpiry method", message );
+			 return this._returnValid( data, error, "Unable to validate key while updating session" );
+		 }
+		 const keyWithPrefix = this.prefix + data;
+		 let serializedSessionData;
+		 try {
+			 serializedSessionData = this.serializer.stringify( sessionData );
+		 } catch (er) {
+			 console.log( "Error in Set Session while serializing", er );
+			 return this._returnValid( null, true, "Unable to stringify session data." );
+		 }
+		 const args = [keyWithPrefix, serializedSessionData];
+		 if (this.useTTL && this.ttlSeconds) {
+			 args.push( "EX", this.ttlSeconds );
+		 }
+		 // @ts-ignore
+		 this.redisClient.set( args );
+		 return this._returnValid(  data, false, "Cookie data has been updated" ); // Returns cookie value after setting to cookie
+	 }
 
 	async _validateCookie(cookies: Cookies) {
 		const cookiesSessionKey = cookies.get( this.cookieName );
@@ -264,7 +287,10 @@ export class RedisSessionStore {
 				return null;
 			}
 			return value;
-		} catch (e) {}
+		} catch (e) {
+			console.log( "decryption error: ", e );
+			return null;
+		}
 	};
 	_returnValid(data: any, error: boolean, message: string) {
 		return { data, error, message };

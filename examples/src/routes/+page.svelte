@@ -3,7 +3,11 @@
 	import type { ActionData, PageServerData } from './$types';
 	import toast from 'svelte-french-toast';
 	import { onMount } from 'svelte';
+	import {page} from "$app/stores";
+	import {invalidateAll} from "$app/navigation";
 	let expireTime;
+
+	$: console.log($page.data)
 	export let form: ActionData;
 	$: if (form && form.data && form.message) {
 		toast.error(form.message);
@@ -25,85 +29,73 @@
 		const responseData = await response.json();
 		show = responseData.loggedIn;
 	};
+
+	const updateCookieData = async () => {
+		const response = await fetch( "/api/updateCookieData", {
+			method: "POST",
+			body: JSON.stringify( { name: 'The Ether' } ),
+			headers: {
+				"content-type": "application/json"
+			}
+		} );
+		const responseData = await response.json();
+		show = responseData.success;
+		console.log(responseData.sessionData);
+		if (responseData.success) {
+			toast.success(`Cookie Data is successfully updated and new session data in redis is ${responseData.sessionData}`)
+		} else {
+			toast.error(responseData.message)
+		}
+		await invalidateAll()
+	};
 </script>
 
 <div class="h-screen font-sans login bg-cover">
 	<div class="container mx-auto h-full flex flex-1 justify-center items-center">
 		<div class="w-full max-w-lg">
 			{#if show}
-				<div class="flex items-center justify-center min-h-screen">
-					<div
-						class="p-4 items-center justify-center w-[680px] rounded-xl group sm:flex space-x-6 bg-white bg-opacity-50 shadow-xl hover:rounded-2xl"
-					>
-						<img
-							class="mx-auto w-full block w-4/12 h-40 rounded-lg"
-							alt="art cover"
-							loading="lazy"
-							src="https://picsum.photos/seed/2/2000/1000"
-						/>
-						<div class="sm:w-8/12 pl-0 p-5">
-							<div class="space-y-2">
-								<div class="space-y-4">
-									<h4 class="text-md font-semibold text-cyan-900 text-justify">
-										You are currently logged in with {data.user.email}
-									</h4>
-								</div>
-								<div class="flex items-center space-x-4 justify-between">
-									<div class="flex gap-3 space-y-1">
-										<img
-											src="https://api.dicebear.com/5.x/lorelei/svg"
-											class="rounded-full h-8 w-8"
-										/>
-										<span class="text-sm">{data.user.email}</span>
-									</div>
-								</div>
-								<div class="flex items-center space-x-4 justify-between">
-									<div class="text-grey-500 flex flex-row space-x-1  my-4">
-										<svg
-											stroke="currentColor"
-											fill="none"
-											stroke-width="0"
-											viewBox="0 0 24 24"
-											height="1em"
-											width="1em"
-											xmlns="http://www.w3.org/2000/svg"
-											><path
-												stroke-linecap="round"
-												stroke-linejoin="round"
-												stroke-width="2"
-												d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-											/></svg
-										>
-										<p class="text-xs">Session valid for 10 Min</p>
-									</div>
-									<div class="flex flex-row space-x-1">
-										<button
-											on:click={() => logoutUser()}
-											class="bg-green-500 shadow-lg shadow- shadow-green-600 text-white cursor-pointer px-3 text-center justify-center items-center py-2 rounded-xl flex space-x-2 flex-row"
-										>
-											<svg
-												xmlns="http://www.w3.org/2000/svg"
-												fill="none"
-												viewBox="0 0 24 24"
-												stroke-width="1.5"
-												stroke="currentColor"
-												class="w-6 h-6"
-											>
-												<path
-													stroke-linecap="round"
-													stroke-linejoin="round"
-													d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"
-												/>
-											</svg>
-											<span>Logout</span>
-										</button>
-									</div>
-								</div>
-							</div>
-						</div>
+
+				<div class="relative mx-auto max-w-md overflow-hidden rounded-lg bg-white shadow">
+					<div>
+						<img src="https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2070&q=80" class="w-full object-cover" alt="" />
+					</div>
+					<div class="absolute inset-0 z-10 bg-gradient-to-t from-black"></div>
+					<div class="absolute inset-x-0 bottom-0 z-20 p-4">
+						<p class="mb-1 text-sm text-white text-opacity-80">{#if $page.data.user.name} {$page.data.user.name} • {/if} <time>Session is valid for only 10 Mins</time></p>
+						<h3 class="text-xl font-medium text-white">{#if $page.data.user.email} {$page.data.user.email} {/if}</h3>
+						<p class="mt-1 text-white text-opacity-80">You are testing for sveltekit redis session manager by ethercorps.</p>
 					</div>
 				</div>
-				<!--{$page.data.user.email}-->
+				<div class="flex items-center justify-center mt-2">
+				<div class="inline-flex -space-x-0 divide-x divide-gray-900 overflow-hidden rounded-lg border border-gray-900 shadow-sm">
+					<button on:click={() => updateCookieData()}
+							type="button" class="inline-flex items-center bg-amber-500 px-4 py-2.5 text-center text-sm font-medium text-amber-100 shadow-sm hover:bg-amber-100 hover:text-amber-900 transition easy-in-out duration-500">
+						<svg xmlns="http://www.w3.org/2000/svg" class="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+						</svg>
+
+						Update Cookie Data
+					</button>
+					<button on:click={() => logoutUser()}
+							type="button" class="inline-flex items-center bg-orange-500 px-4 py-2.5 text-center text-sm font-medium text-orange-100 shadow-sm hover:bg-orange-100 hover:text-orange-900 transition easy-in-out duration-500">
+						<svg
+								xmlns="http://www.w3.org/2000/svg"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke-width="1.5"
+								stroke="currentColor"
+								class="w-6 h-6"
+						>
+							<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"
+							/>
+						</svg>
+						Logout
+					</button>
+				</div>
+				</div>
 			{:else}
 				<div class="leading-loose">
 					<form
@@ -157,7 +149,7 @@
 <style>
 	.login {
 		/*background: url(https://tailwindadmin.netlify.app/dist/images/login-new.jpeg);*/
-		background: url('http://bit.ly/2gPLxZ4');
+		background: url("http://bit.ly/2gPLxZ4");
 		background-repeat: no-repeat;
 		background-size: cover;
 	}

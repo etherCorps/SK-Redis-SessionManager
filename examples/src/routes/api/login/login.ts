@@ -1,6 +1,6 @@
 import { fail, json, redirect } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
-import { sessionManger } from "$lib/session";
+import { sessionManager } from "$lib/session";
 
 export const POST = (async ({ request, locals, cookies }) => {
 
@@ -14,7 +14,7 @@ export const POST = (async ({ request, locals, cookies }) => {
       message: "Invalid credentials"
     } );
   }
-  const { data, error, message } = await sessionManger.createNewSession( cookies, {
+  const { data, error, message } = await sessionManager.createNewSession( cookies, {
     email
   } );
   if (error) {

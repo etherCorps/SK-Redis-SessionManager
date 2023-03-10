@@ -1,2 +1,2 @@
-export { RedisSessionStore } from "$lib/sessionManager";
-export type { redisSessionOptions, RedisClientTypes, Serializer } from "$lib/sessionManager";
+export { RedisSessionStore } from "./sessionManager";
+export type { redisSessionOptions, RedisClientTypes, Serializer } from "./sessionManager";

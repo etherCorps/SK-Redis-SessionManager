@@ -1,7 +1,7 @@
 import { RedisSessionStore } from "@ethercorps/sveltekit-redis-session";
 import Redis from "ioredis";
 import { SECRET, REDIS_URL } from '$env/static/private';
-export const sessionManger = new RedisSessionStore({
+export const sessionManager = new RedisSessionStore({
 	redisClient: new Redis(REDIS_URL),
 	secret: SECRET,
 	prefix: 'redisk-example:',

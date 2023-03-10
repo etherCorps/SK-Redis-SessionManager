@@ -1,6 +1,6 @@
 import type { Actions } from '@sveltejs/kit';
 import { fail } from '@sveltejs/kit';
-import { sessionManger } from '$lib/session';
+import { sessionManager } from '$lib/session';
 import type { PageServerLoad } from './$types';
 
 export let ssr = true;
@@ -24,7 +24,7 @@ export const actions: Actions = {
 			});
 		}
 
-		const { data, error, message } = await sessionManger.createNewSession( cookies, {
+		const { data, error, message } = await sessionManager.createNewSession( cookies, {
 			email: formData.get( "email" )
 		} );
 		if (error) {
