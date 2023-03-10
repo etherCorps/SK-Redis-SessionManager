@@ -10,7 +10,6 @@ export const handle: Handle = async ({ event, resolve }) => {
 		user: null
 	};
 	if (userSession.error) {
-		console.log( userSession );
 		await sessionManager.deleteCookie( await event.cookies );
 		return resolve( event );
 	}

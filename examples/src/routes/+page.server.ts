@@ -24,7 +24,7 @@ export const actions: Actions = {
 			});
 		}
 
-		const { data, error, message } = await sessionManager.createNewSession( cookies, {
+		const { error, message } = await sessionManager.createNewSession( cookies, {
 			email: formData.get( "email" )
 		} );
 		if (error) {
@@ -34,6 +34,6 @@ export const actions: Actions = {
 				message
 			});
 		}
-		return { success: true };
+		return { success: true, message };
 	}
 };

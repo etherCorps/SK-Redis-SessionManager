@@ -7,7 +7,6 @@
 	import {invalidateAll} from "$app/navigation";
 	let expireTime;
 
-	$: console.log($page.data)
 	export let form: ActionData;
 	$: if (form && form.data && form.message) {
 		toast.error(form.message);
@@ -39,7 +38,6 @@
 			}
 		} );
 		const responseData = await response.json();
-		show = responseData.success;
 		console.log(responseData.sessionData);
 		if (responseData.success) {
 			toast.success(`Cookie Data is successfully updated and new session data in redis is ${responseData.sessionData}`)
@@ -61,8 +59,8 @@
 					</div>
 					<div class="absolute inset-0 z-10 bg-gradient-to-t from-black"></div>
 					<div class="absolute inset-x-0 bottom-0 z-20 p-4">
-						<p class="mb-1 text-sm text-white text-opacity-80">{#if $page.data.user.name} {$page.data.user.name} • {/if} <time>Session is valid for only 10 Mins</time></p>
-						<h3 class="text-xl font-medium text-white">{#if $page.data.user.email} {$page.data.user.email} {/if}</h3>
+						<p class="mb-1 text-sm text-white text-opacity-80">{#if $page.data.user?.name} {$page.data.user.name} • {/if} <time>Session is valid for only 10 Mins</time></p>
+						<h3 class="text-xl font-medium text-white">{#if $page.data.user?.email} {$page.data.user.email} {/if}</h3>
 						<p class="mt-1 text-white text-opacity-80">You are testing for sveltekit redis session manager by ethercorps.</p>
 					</div>
 				</div>
@@ -77,7 +75,7 @@
 						Update Cookie Data
 					</button>
 					<button on:click={() => logoutUser()}
-							type="button" class="inline-flex items-center bg-orange-500 px-4 py-2.5 text-center text-sm font-medium text-orange-100 shadow-sm hover:bg-orange-100 hover:text-orange-900 transition easy-in-out duration-500">
+							type="button" class="inline-flex items-center bg-red-500 px-4 py-2.5 text-center text-sm font-medium text-red-100 shadow-sm hover:bg-red-100 hover:text-red-900 transition easy-in-out duration-500">
 						<svg
 								xmlns="http://www.w3.org/2000/svg"
 								fill="none"
@@ -101,7 +99,11 @@
 					<form
 						class="max-w-sm m-4 p-10 bg-white bg-opacity-25 rounded shadow-xl"
 						method="post"
-						use:enhance
+						use:enhance={() => {
+							return async ({ result, update }) => {
+     								await invalidateAll()
+    							};
+						}}
 					>
 						<p class="text-white font-medium text-center text-lg font-bold">
 							SvelteKit Redis Session Login Example
