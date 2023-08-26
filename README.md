@@ -172,7 +172,7 @@ to use @ethercorps/SvelteKit-redis-session</a>
    const { data, error, message } = await sessionManager.updateCookieData(cookies, newSessionData);
    // data is going to be null or key which is updated, error is a boolean value and message a string
    ```
-   
+
 6. To delete session from redis and cookie from browser
 
    ```ts
