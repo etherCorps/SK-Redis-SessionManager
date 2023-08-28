@@ -27,3 +27,4 @@ jobs:
           token: ${{ secrets.NPM_TOKEN }}
           package: './dist'
           ignore-scripts: true
+          dry-run: true
