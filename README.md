@@ -10,7 +10,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/etherCorps/SK-Redis-SessionManager">
-    <img src="https://sveltekit-redis-session-manager.vercel.app/logo.svg" alt="Logo" width="80" height="80">
+    <img src="./static/logo.svg" alt="Logo" width="80" height="80">
   </a>
 
 <h3 align="center">SvelteKit Redis Session Manager</h3>
@@ -37,6 +37,7 @@
     <li>
       <a href="#about-the-project">About The Project</a>
       <ul>
+        <li><a href="#ket-features">Key Features</a></li>
         <li><a href="#built-with">Built With</a></li>
       </ul>
     </li>
@@ -61,14 +62,19 @@
 
 [//]: # '[![Product Name Screen Shot][product-screenshot]](https://github.com/etherCorps/SK-Redis-SessionManager)'
 
-"sveltekit-redis-session" makes it easy for developers to use Redis as a session manager in SvelteKit
-applications. It offers a variety of convenient features that make managing user sessions a breeze. This includes simple
-functions for storing and retrieving data, encryption of session data for added security, and automatic handling of
-session expiration. Additionally, the package is highly customizable, which allows developers to adjust it to their
-specific requirements and optimize performance (COPY MY CODE BUT LEARN).
-Overall, "sveltekit-redis-session" is choice for managing user sessions in any SvelteKit application thanks to SvelteKit package for robust functionality and flexibility.
-
+"SvelteKit-Redis-Session" stands out as an indispensable tool for developers aiming to seamlessly integrate Redis as a session manager within their SvelteKit applications. Designed with a keen attention to detail, this package ensures that managing user sessions is not only efficient but also intuitive.
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## Key Features
+
+- `Simplicity at its Core`: With intuitive functions, developers can effortlessly store and retrieve data without wading through complexities.
+- `Enhanced Security`: Understanding the need for robust data protection, the package offers signature & encryption for session data.
+- `Intelligent Session Management`: The package intelligently handles session expiration, reducing the manual oversight typically needed.
+- `Bespoke Customization`: Recognizing that one size doesn't fit all, "SvelteKit-Redis-Session" offers high customizability, allowing developers to tailor its functionalities to their distinct needs, and in turn, enhancing application performance.
+- `For all runtimes`: As of now we have so many runtimes cloudflare workers, vercel, netlify.
+- `Support for multiple redis libraries`: We support `redis` & `ioredis` out of the box.
+  - `Support for @upstash/redis`: It's mandatory if you are working with workers, edge and serverless. Cloudflare workers doesn't support TCP.
+
 
 ### Built With
 
@@ -89,21 +95,36 @@ To get a local copy up and running follow these simple example steps.
 
 This is an example of how to list things you need to use the software and how to install them.
 
-- Install the sveltekit-redis-session
+- Install the `@ethercorps/sveltekit-redis-session`
   ```sh
-  pnpm i @ethercorps/SvelteKit-redis-session
+  pnpm i @ethercorps/sveltekit-redis-session
   ```
+  
+- Choose which redis library you are using:
+  - `redis`: Official redis nodeJs implementation
+      ```sh
+      pnpm i redis
+      ```
+  - `ioredis`: A robust, performance-focused and full-featured Redis client for Node.js.
+    ```sh
+    pnpm i ioredis
+    ```
+  - `@upstash/redis`: is an HTTP/REST based Redis client built on top of Upstash REST API.
+    ```sh
+    pnpm i @upstash/redis
+    ```
 
 ### Setup
 
-<a href="https://dev.to/theether0/redis-integration-in-sveltekit-a-game-changer-for-session-management-84i">Guide to how
-to use @ethercorps/SvelteKit-redis-session</a>
+[//]: # (<a href="https://dev.to/theether0/redis-integration-in-sveltekit-a-game-changer-for-session-management-84i">Guide to how)
 
-1. First we need to make instance of it to use everywhere in project.
+[//]: # (to use @ethercorps/SvelteKit-redis-session</a>)
+
+1. First, we need to make instance of it to use everywhere in the project.
    ```ts
-   import { RedisSessionStore } from '@ethercorps/SvelteKit-redis-session';
+   import { IoRedisSessionStore } from '@ethercorps/SvelteKit-redis-session';
    import Redis from 'ioredis';
-   export const sessionManager = new RedisSessionStore({
+   export const sessionManager = new IoRedisSessionStore({
    	redisClient: new Redis(), // Required A pre-initiated redis client
    	secret: 'your-secret-key', // Required A secret key for encryption and other things,
    	cookieName: 'session', // CookieName to be saved in cookies for browser Default session
@@ -125,7 +146,7 @@ to use @ethercorps/SvelteKit-redis-session</a>
    ```
    > These are the default config example you can use as per your need and make it better for your use.
    > I have written an article to explain more about this package <a href="">link for article</a>.
-2. To create new session and add cookies for user after authentication
+2. To create a new session and add cookies for user after authentication
 
    ```ts
    // Example it's a +page.server.ts
@@ -135,7 +156,7 @@ to use @ethercorps/SvelteKit-redis-session</a>
    	login: async ({ req, cookies, locals }) => {
    		const formdata = await request.formData();
    		// Form validation && user validation
-   		const { data, error, message } = sessionManager.createNewSession(cookies, userData);
+   		const { data, error, message } = sessionManager.createSession(cookies, userData, userId);
    		// data is the value we added to cookies, check for error which is a boolean and message.
    		/* add data to locals too for accessing data from client */
    		throw redirect(307, '/dashboard');
@@ -169,7 +190,7 @@ to use @ethercorps/SvelteKit-redis-session</a>
    ```ts
    // in any server side file or endpoint where you can access browser cookies
    import sessionManager from 'sessionManagerFile';
-   const { data, error, message } = await sessionManager.updateCookieData(cookies, newSessionData);
+   const { data, error, message } = await sessionManager.updateSession(cookies, newSessionData);
    // data is going to be null or key which is updated, error is a boolean value and message a string
    ```
 
@@ -181,14 +202,28 @@ to use @ethercorps/SvelteKit-redis-session</a>
    import sessionManager from 'sessionManagerFile';
    export const actions: Actions = {
    	logout: async ({ cookies, locals }) => {
-   		const { data, error, message } = await sessionManager.delSession(cookies);
+   		const { data, error, message } = await sessionManager.deleteSession(cookies);
    		// data is the value we deleted key, check for error which is a boolean and message.
    		/* clear your locals too */
    		throw redirect(307, '/login');
    	}
    };
    ```
+7. To get all sessions of a user from redis and cookie from browser
 
+   ```ts
+   // Example it's a +server.ts
+
+   import sessionManager from 'sessionManagerFile'; 
+   
+   export const GET: RequestHandler = async ({ cookies, locals }) => {
+   		const { data, error, message } = await sessionManager.getSessionsByUserId(userId);
+   		// data is the session data array, check for error which is a boolean and message.
+   		/* clear your locals too */
+   		return json({data})
+   	}
+   };
+   ```
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- USAGE EXAMPLES -->

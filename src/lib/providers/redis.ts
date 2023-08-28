@@ -12,7 +12,7 @@ import {
 } from '$lib/shared.js';
 import type {Cookies} from "@sveltejs/kit";
 
-export class ioredisSessionStore {
+export class RedisSessionStore {
     private readonly redisClient: RedisClientType;
     private readonly secret: string;
     private readonly cookieName: string;
