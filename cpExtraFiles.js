@@ -9,4 +9,4 @@ fs.writeFileSync('./dist/package.json', JSON.stringify(pkgJson, null, 2));
 
 fs.writeFileSync('./dist/README.md', pkgReadme);
 
-fs.writeFileSync('./dist/LICENSE', pkfLicense);
+fs.writeFileSync('./dist/LICENSE.txt', pkfLicense);

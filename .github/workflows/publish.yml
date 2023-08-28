@@ -1,6 +1,6 @@
 on:
   push:
-    branches: master
+    branches: main
 
 jobs:
   publish:
@@ -11,16 +11,19 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 16
       - uses: pnpm/action-setup@v2
         name: Install pnpm
         id: pnpm-install
         with:
           version: 8.6.1
-      - run: pnpm install --no-frozen-lockfile
+      - run: pnpm install
+      # - run: pnpm test:build
       - run: pnpm build
-      #- run: pnpm test
+      - run: cd package && ls
+      # - run: pnpm test
       - uses: JS-DevTools/npm-publish@v2
         with:
           token: ${{ secrets.NPM_TOKEN }}
-          package: "dist"
+          package: './dist'
+          ignore-scripts: true
