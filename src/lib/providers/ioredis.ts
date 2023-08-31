@@ -1,5 +1,5 @@
 import type { Redis } from 'ioredis';
-import type {CookieSerializeOptions, ioRedisSessionOptions, Serializer} from '$lib/shared.js';
+import type { CookieSerializeOptions, ioRedisSessionOptions, Serializer } from '$lib/shared.js';
 import {
 	defaultCookiesOption,
 	defaultRenewBeforeSeconds,
@@ -10,7 +10,7 @@ import {
 	signSessionKey,
 	validateCookie
 } from '$lib/shared.js';
-import type {Cookies} from "@sveltejs/kit";
+import type { Cookies } from '@sveltejs/kit';
 
 export class IoRedisSessionStore {
 	private readonly redisClient: Redis;
@@ -32,7 +32,7 @@ export class IoRedisSessionStore {
 		secret,
 		cookieName = 'session',
 		sessionPrefix = 'sk_ioredis_session',
-		userSessionsPrefix= 'sk_ioredis_user_sessions',
+		userSessionsPrefix = 'sk_ioredis_user_sessions',
 		signed = true,
 		useTTL = true,
 		renewSessionBeforeExpire = false,
@@ -75,7 +75,11 @@ export class IoRedisSessionStore {
 		this.cookieOptions = { ...defaultCookiesOption, ...cookiesOptions };
 		this.ttlSeconds = this.cookieOptions.maxAge;
 	}
-	createSession = async (cookies: Cookies, sessionData: any, userId: string): Promise<{data: any, error: boolean, message: string}> => {
+	createSession = async (
+		cookies: Cookies,
+		sessionData: any,
+		userId: string
+	): Promise<{ data: any; error: boolean; message: string }> => {
 		let sessionKey = getSessionKey(this.sessionPrefix, this.uniqueIdGenerator());
 
 		let serializedSessionData;
@@ -93,129 +97,168 @@ export class IoRedisSessionStore {
 		}
 		await redisPipeline.exec();
 		if (this.signedCookies) {
-			sessionKey = await signSessionKey(sessionKey, this.secret)
+			sessionKey = await signSessionKey(sessionKey, this.secret);
 		}
-		cookies.set( this.cookieName, sessionKey, this.cookieOptions );
-		return formattedReturn( sessionKey, false, "Successfully created new session.")
+		cookies.set(this.cookieName, sessionKey, this.cookieOptions);
+		return formattedReturn(sessionKey, false, 'Successfully created new session.');
 	};
 
 	getSession = async (cookies: Cookies) => {
-		const { data: sessionId, error, message } = await validateCookie(cookies, this.cookieName, this.secret, this.signedCookies);
+		const {
+			data: sessionId,
+			error,
+			message
+		} = await validateCookie(cookies, this.cookieName, this.secret, this.signedCookies);
 		if (error) return formattedReturn(sessionId, error, message);
 		const sessionData = await this.redisClient.get(getSessionKey(this.sessionPrefix, sessionId));
-		if (!sessionData) return formattedReturn(null, true, `Unable to find data for the provided key - ${sessionId}`);
+		if (!sessionData)
+			return formattedReturn(null, true, `Unable to find data for the provided key - ${sessionId}`);
 		let parsedSession;
 		try {
-			parsedSession = this.serializer.parse( sessionData );
+			parsedSession = this.serializer.parse(sessionData);
 		} catch (err) {
-			console.log( err );
-			return formattedReturn( null, true, "Unable to parse the session data." );
+			console.log(err);
+			return formattedReturn(null, true, 'Unable to parse the session data.');
 		}
 
 		if (this.renewSessionBeforeExpire) {
-			const sessionValidity = await this.redisClient.ttl(getSessionKey(this.sessionPrefix, sessionId));
+			const sessionValidity = await this.redisClient.ttl(
+				getSessionKey(this.sessionPrefix, sessionId)
+			);
 			if (sessionValidity < this.renewBeforeSeconds && this.ttlSeconds) {
-				const { error, message } = await this.updateSessionExpiry( cookies, true, sessionId );
+				const { error, message } = await this.updateSessionExpiry(cookies, true, sessionId);
 				if (error) {
-					console.log( message );
+					console.log(message);
 				}
 			}
 		}
-		return formattedReturn( parsedSession, false, "Session Data" ); // return session data
+		return formattedReturn(parsedSession, false, 'Session Data'); // return session data
 	};
 
 	// From lucia auth & made my own changes
 	getSessionsByUserId = async (userId: string) => {
-		const sessionIds = await this.redisClient.smembers(getUserSessionKey(this.userSessionsPrefix, userId));
-		if (!sessionIds) return formattedReturn(null, true, `Unable to find session for user: ${userId}.`);
+		const sessionIds = await this.redisClient.smembers(
+			getUserSessionKey(this.userSessionsPrefix, userId)
+		);
+		if (!sessionIds)
+			return formattedReturn(null, true, `Unable to find session for user: ${userId}.`);
 		const sessionData = await Promise.all(
-			sessionIds.map((sessionId) => this.redisClient.get(getSessionKey(this.sessionPrefix, sessionId)))
+			sessionIds.map((sessionId) =>
+				this.redisClient.get(getSessionKey(this.sessionPrefix, sessionId))
+			)
 		);
 		const sessions = sessionData
 			.filter((val): val is string => val !== null)
 			.map((val) => this.serializer.parse(val) as any);
-		return formattedReturn(sessions, false, `We found ${sessionData.length} active session for user: ${userId}`);
+		return formattedReturn(
+			sessions,
+			false,
+			`We found ${sessionData.length} active session for user: ${userId}`
+		);
 	};
 	// till here
 
-	deleteSession = async (cookies: Cookies)=> {
-		const { data: sessionId, error, message } = await validateCookie(cookies,this.cookieName, this.secret, this.signedCookies );
+	deleteSession = async (cookies: Cookies) => {
+		const {
+			data: sessionId,
+			error,
+			message
+		} = await validateCookie(cookies, this.cookieName, this.secret, this.signedCookies);
 		if (error) {
-			console.log( "Error in delSession method", message );
-			return formattedReturn( sessionId, error, "Unable to validate key while deleting" );
+			console.log('Error in delSession method', message);
+			return formattedReturn(sessionId, error, 'Unable to validate key while deleting');
 		}
 		const deleteData = await this.redisClient.del(getSessionKey(this.sessionPrefix, sessionId));
-		if (!deleteData) return formattedReturn( null, true, `Key not found while deleting` );
-		await this.deleteCookie( cookies );
-		return formattedReturn( sessionId, false, `Key successfully deleted` ); // Returns unique key without prefix which is deleted from redis
+		if (!deleteData) return formattedReturn(null, true, `Key not found while deleting`);
+		await this.deleteCookie(cookies);
+		return formattedReturn(sessionId, false, `Key successfully deleted`); // Returns unique key without prefix which is deleted from redis
 	};
 
-	deleteSessionsByUserId=  async (userId: string) => {
-		const sessionIds = await this.redisClient.smembers(getUserSessionKey(this.userSessionsPrefix, userId));
-		if (!sessionIds) return formattedReturn(null, true, `Unable to find session for user: ${userId}.`);
+	deleteSessionsByUserId = async (userId: string) => {
+		const sessionIds = await this.redisClient.smembers(
+			getUserSessionKey(this.userSessionsPrefix, userId)
+		);
+		if (!sessionIds)
+			return formattedReturn(null, true, `Unable to find session for user: ${userId}.`);
 		await Promise.all([
-							  ...sessionIds.map((sessionId) => this.redisClient.del(getSessionKey(this.sessionPrefix, sessionId))),
-							  this.redisClient.del(getUserSessionKey(this.userSessionsPrefix, userId))
+			...sessionIds.map((sessionId) =>
+				this.redisClient.del(getSessionKey(this.sessionPrefix, sessionId))
+			),
+			this.redisClient.del(getUserSessionKey(this.userSessionsPrefix, userId))
 		]);
-		return formattedReturn( userId, false, `Successfully deleted` ); // Returns userId without prefix which is deleted from redis
+		return formattedReturn(userId, false, `Successfully deleted`); // Returns userId without prefix which is deleted from redis
 	};
 
-	deleteCookie = async (cookies: Cookies)=> {
+	deleteCookie = async (cookies: Cookies) => {
 		const allCookieOptionsCopy = { ...this.cookieOptions };
 		delete allCookieOptionsCopy.maxAge;
 		try {
-			cookies.delete( this.cookieName, allCookieOptionsCopy );
+			cookies.delete(this.cookieName, allCookieOptionsCopy);
 		} catch (err) {
-			console.log( "error while deleting cookies in deleteCookie method", err );
+			console.log('error while deleting cookies in deleteCookie method', err);
 		}
 	};
 
-	async updateSession(cookies: Cookies, sessionData = {}): Promise<{ data: any; error: boolean; message: string }> {
-		const { data: sessionId, error, message } = await validateCookie(cookies,this.cookieName, this.secret, this.signedCookies );
+	async updateSession(
+		cookies: Cookies,
+		sessionData = {}
+	): Promise<{ data: any; error: boolean; message: string }> {
+		const {
+			data: sessionId,
+			error,
+			message
+		} = await validateCookie(cookies, this.cookieName, this.secret, this.signedCookies);
 		if (error) {
-			console.log( "Error in updateSessionExpiry method", message );
-			return formattedReturn( sessionId, error, "Unable to validate key while updating session" );
+			console.log('Error in updateSessionExpiry method', message);
+			return formattedReturn(sessionId, error, 'Unable to validate key while updating session');
 		}
 		const keyWithPrefix = getSessionKey(this.sessionPrefix, sessionId);
 		let serializedSessionData;
 		try {
-			serializedSessionData = this.serializer.stringify( sessionData );
+			serializedSessionData = this.serializer.stringify(sessionData);
 		} catch (er) {
-			console.log( "Error in Set Session while serializing", er );
-			return formattedReturn( null, true, "Unable to stringify session data." );
+			console.log('Error in Set Session while serializing', er);
+			return formattedReturn(null, true, 'Unable to stringify session data.');
 		}
 		const redisPipe = this.redisClient.pipeline();
-		redisPipe.set(keyWithPrefix, serializedSessionData)
+		redisPipe.set(keyWithPrefix, serializedSessionData);
 		if (this.useTTL && this.ttlSeconds) {
-			redisPipe.expire(keyWithPrefix, this.ttlSeconds)
+			redisPipe.expire(keyWithPrefix, this.ttlSeconds);
 		}
-		await redisPipe.exec()
-		return formattedReturn(  sessionId, false, "Cookie data has been updated" );
+		await redisPipe.exec();
+		return formattedReturn(sessionId, false, 'Cookie data has been updated');
 	}
 
-
-	updateSessionExpiry = async (cookies: Cookies, skipValidation = false, key = ""): Promise<{ data: any; error: boolean; message: string }> => {
+	updateSessionExpiry = async (
+		cookies: Cookies,
+		skipValidation = false,
+		key = ''
+	): Promise<{ data: any; error: boolean; message: string }> => {
 		let uniqueKey = key;
 		if (!skipValidation) {
-			const { data: sessionKey, error, message } = await validateCookie( cookies, this.cookieName, this.secret, this.signedCookies );
+			const {
+				data: sessionKey,
+				error,
+				message
+			} = await validateCookie(cookies, this.cookieName, this.secret, this.signedCookies);
 			if (error) {
-				console.log( "Error in updateSessionExpiry method", message );
-				return formattedReturn( sessionKey, error, "Unable to validate key while updating session" );
+				console.log('Error in updateSessionExpiry method', message);
+				return formattedReturn(sessionKey, error, 'Unable to validate key while updating session');
 			}
 			uniqueKey = sessionKey;
 		}
 		let isExpireTimeUpdated = 1;
 		if (this.useTTL && this.ttlSeconds) {
-			isExpireTimeUpdated = await this.redisClient.expire(getSessionKey(this.sessionPrefix, uniqueKey), this.ttlSeconds as number);
-		}
-		if (isExpireTimeUpdated) {
-			if (this.signedCookies) uniqueKey = await signSessionKey( uniqueKey, this.secret );
-			cookies.set( this.cookieName, uniqueKey, this.cookieOptions );
-			return formattedReturn( uniqueKey,
-				false,
-				"Session validity extended successfully"
+			isExpireTimeUpdated = await this.redisClient.expire(
+				getSessionKey(this.sessionPrefix, uniqueKey),
+				this.ttlSeconds as number
 			);
 		}
-		return formattedReturn( null, true, "Unable to extended session validity" );
-	}
+		if (isExpireTimeUpdated) {
+			if (this.signedCookies) uniqueKey = await signSessionKey(uniqueKey, this.secret);
+			cookies.set(this.cookieName, uniqueKey, this.cookieOptions);
+			return formattedReturn(uniqueKey, false, 'Session validity extended successfully');
+		}
+		return formattedReturn(null, true, 'Unable to extended session validity');
+	};
 }

@@ -19,11 +19,21 @@
 		}
 	],
 	"license": "MIT",
+	"keywords": [
+		"SvelteKit",
+		"Redis",
+		"Session",
+		"SvelteKit Redis",
+		"SvelteKit Session",
+		"SvelteKit Redis Session Manager",
+		"Redis Session SvelteKit Adapter",
+		"SvelteKit Authentication Redis"
+	],
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build && npm run package",
 		"preview": "vite preview",
-		"package": "svelte-kit sync && svelte-package && node cpExtraFiles.js && publint",
+		"package": "svelte-kit sync && svelte-package && publint",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"test": "vitest",
@@ -37,10 +47,7 @@
 		}
 	},
 	"files": [
-		"dist",
-		"dist/**/**",
-		"!dist/**/*.test.*",
-		"!dist/**/*.spec.*"
+		"dist"
 	],
 	"peerDependencies": {
 		"@sveltejs/kit": "^1.23.0",
@@ -69,7 +76,6 @@
 		"vite": "^4.4.9",
 		"vitest": "^0.34.3"
 	},
-	"svelte": "./dist/index.js",
 	"types": "./dist/index.d.ts",
 	"type": "module",
 	"peerDependenciesMeta": {

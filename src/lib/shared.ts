@@ -1,9 +1,8 @@
 import type { Redis } from 'ioredis';
 import type { RedisClientType } from 'redis';
 import type { Redis as upstashRedisClient } from '@upstash/redis';
-import {dev} from "$app/environment";
-import type {Cookies} from "@sveltejs/kit";
-
+import { dev } from '$app/environment';
+import type { Cookies } from '@sveltejs/kit';
 
 // code copied from Nanoid:
 // https://github.com/ai/nanoid/blob/9b748729f8ad5409503b508b65958636e55bd87a/index.browser.js
@@ -54,10 +53,14 @@ const importKey = async (secret: string) => {
 	);
 };
 
-export  const signSessionKey = async (key: string, secret: string) => {
+export const signSessionKey = async (key: string, secret: string) => {
 	const secretKeyEncoded = await importKey(secret);
 
-	const signature = await crypto.subtle.sign('HMAC', secretKeyEncoded, new TextEncoder().encode(key));
+	const signature = await crypto.subtle.sign(
+		'HMAC',
+		secretKeyEncoded,
+		new TextEncoder().encode(key)
+	);
 
 	const newDigest = btoa(String.fromCharCode(...new Uint8Array(signature)));
 	return `${key}.${newDigest}`;
@@ -87,15 +90,20 @@ export const verifySignature = async (signedCookie: string, secret: string) => {
 	}
 };
 
-export const validateCookie = async (cookies: Cookies, cookieName: string, secret: string, signedCookies: boolean)=> {
-	const cookiesSessionKey = cookies.get( cookieName );
-	if (!cookiesSessionKey) return formattedReturn( null, true, "No session found in cookies." );
+export const validateCookie = async (
+	cookies: Cookies,
+	cookieName: string,
+	secret: string,
+	signedCookies: boolean
+) => {
+	const cookiesSessionKey = cookies.get(cookieName);
+	if (!cookiesSessionKey) return formattedReturn(null, true, 'No session found in cookies.');
 	let verifiedSessionKey = cookiesSessionKey;
-	if (signedCookies) verifiedSessionKey = (await verifySignature( verifiedSessionKey, secret )) as string;
-	if (!verifiedSessionKey)return formattedReturn( null, true, "Cookies session is not verified." );
-	return formattedReturn( verifiedSessionKey, false, "Successfully validated cookies" );
-}
-
+	if (signedCookies)
+		verifiedSessionKey = (await verifySignature(verifiedSessionKey, secret)) as string;
+	if (!verifiedSessionKey) return formattedReturn(null, true, 'Cookies session is not verified.');
+	return formattedReturn(verifiedSessionKey, false, 'Successfully validated cookies');
+};
 
 export interface CookieSerializeOptions {
 	domain?: string | undefined;
@@ -124,7 +132,7 @@ export interface upstashRedisSessionOptions extends redisSessionOptions {
 interface redisSessionOptions {
 	secret: string;
 	cookieName?: string;
-	userSessionsPrefix?: string,
+	userSessionsPrefix?: string;
 	sessionPrefix?: string;
 	signed?: boolean;
 	useTTL?: boolean;

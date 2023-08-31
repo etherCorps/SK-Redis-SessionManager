@@ -63,6 +63,7 @@
 [//]: # '[![Product Name Screen Shot][product-screenshot]](https://github.com/etherCorps/SK-Redis-SessionManager)'
 
 "SvelteKit-Redis-Session" stands out as an indispensable tool for developers aiming to seamlessly integrate Redis as a session manager within their SvelteKit applications. Designed with a keen attention to detail, this package ensures that managing user sessions is not only efficient but also intuitive.
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Key Features
@@ -74,7 +75,6 @@
 - `For all runtimes`: As of now we have so many runtimes cloudflare workers, vercel, netlify.
 - `Support for multiple redis libraries`: We support `redis` & `ioredis` out of the box.
   - `Support for @upstash/redis`: It's mandatory if you are working with workers, edge and serverless. Cloudflare workers doesn't support TCP.
-
 
 ### Built With
 
@@ -99,12 +99,11 @@ This is an example of how to list things you need to use the software and how to
   ```sh
   pnpm i @ethercorps/sveltekit-redis-session
   ```
-  
 - Choose which redis library you are using:
   - `redis`: Official redis nodeJs implementation
-      ```sh
-      pnpm i redis
-      ```
+    ```sh
+    pnpm i redis
+    ```
   - `ioredis`: A robust, performance-focused and full-featured Redis client for Node.js.
     ```sh
     pnpm i ioredis
@@ -116,9 +115,8 @@ This is an example of how to list things you need to use the software and how to
 
 ### Setup
 
-[//]: # (<a href="https://dev.to/theether0/redis-integration-in-sveltekit-a-game-changer-for-session-management-84i">Guide to how)
-
-[//]: # (to use @ethercorps/SvelteKit-redis-session</a>)
+[//]: # '<a href="https://dev.to/theether0/redis-integration-in-sveltekit-a-game-changer-for-session-management-84i">Guide to how'
+[//]: # 'to use @ethercorps/SvelteKit-redis-session</a>'
 
 1. First, we need to make instance of it to use everywhere in the project.
    ```ts
@@ -179,6 +177,7 @@ This is an example of how to list things you need to use the software and how to
    ```
 
 4. To update session expiry in redis and cookies
+
    ```ts
    // in any server side file or endpoint where you can access browser cookies
    import sessionManager from 'sessionManagerFile';
@@ -187,6 +186,7 @@ This is an example of how to list things you need to use the software and how to
    ```
 
 5. To update session data in redis and cookies
+
    ```ts
    // in any server side file or endpoint where you can access browser cookies
    import sessionManager from 'sessionManagerFile';
@@ -209,13 +209,14 @@ This is an example of how to list things you need to use the software and how to
    	}
    };
    ```
+
 7. To get all sessions of a user from redis and cookie from browser
 
    ```ts
    // Example it's a +server.ts
 
-   import sessionManager from 'sessionManagerFile'; 
-   
+   import sessionManager from 'sessionManagerFile';
+
    export const GET: RequestHandler = async ({ cookies, locals }) => {
    		const { data, error, message } = await sessionManager.getSessionsByUserId(userId);
    		// data is the session data array, check for error which is a boolean and message.
@@ -224,7 +225,8 @@ This is an example of how to list things you need to use the software and how to
    	}
    };
    ```
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+   <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- USAGE EXAMPLES -->
 
@@ -248,35 +250,20 @@ features (and known issues).
 <!-- CONTRIBUTING -->
 
 [//]: # '## Contributing'
-
 [//]: #
-
 [//]: # 'Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any'
-
 [//]: # 'contributions you make are **greatly appreciated**.'
-
 [//]: #
-
 [//]: # 'If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also'
-
 [//]: # 'simply open an issue with the tag "enhancement".'
-
 [//]: # "Don't forget to give the project a star! Thanks again!"
-
 [//]: #
-
 [//]: # '1. Fork the Project'
-
 [//]: # '2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)'
-
 [//]: # "3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)"
-
 [//]: # '4. Push to the Branch (`git push origin feature/AmazingFeature`)'
-
 [//]: # '5. Open a Pull Request'
-
 [//]: #
-
 [//]: # '<p align="right">(<a href="#readme-top">back to top</a>)</p>'
 
 <!-- LICENSE -->
@@ -323,11 +310,8 @@ Link: [https://github.com/etherCorps/SK-Redis-SessionManager](https://github.com
 [license-url]: https://github.com/etherCorps/SK-Redis-SessionManager/blob/master/LICENSE.txt
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://linkedin.com/in/theether0
-
 [product-screenshot]: static/screenshot.png
-
 [SvelteKit]: https://img.shields.io/badge/sveltekit-000000?style=for-the-badge&logo=svelte&logoColor=white
-
 [SvelteKit-url]: https://kit.svelte.dev
 [Redis]: https://img.shields.io/badge/Redis-DD0031?style=for-the-badge&logo=Redis&logoColor=white
 [Redis-url]: https://redis.io/
