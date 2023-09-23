@@ -1,6 +1,6 @@
 {
 	"name": "@ethercorps/sveltekit-redis-session",
-	"version": "1.0.3",
+	"version": "1.1.0",
 	"private": false,
 	"description": "A library which uses svelte compiler to convert html & css to jsx. Useful for using satori with svelte & Kit",
 	"homepage": "https://github.com/etherCorps/SK-Redis-SessionManager#readme",
