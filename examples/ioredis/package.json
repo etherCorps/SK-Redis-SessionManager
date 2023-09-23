@@ -5,7 +5,7 @@
 	"scripts": {
 		"dev": "vite dev --host",
 		"build": "vite build",
-		"build:pac": "cd .. && pnpm install && pnpm build && cd examples && pnpm build",
+		"build:pac": "cd ../.. && pnpm install && pnpm build && cd examples/ioredis && pnpm build",
 		"preview": "vite preview",
 		"test": "playwright test",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
