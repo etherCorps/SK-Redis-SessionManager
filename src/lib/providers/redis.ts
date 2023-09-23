@@ -80,7 +80,7 @@ export class RedisSessionStore {
 		sessionData: any,
 		userId: string
 	): Promise<{ data: any; error: boolean; message: string }> => {
-		let sessionKey = getSessionKey(this.sessionPrefix, this.uniqueIdGenerator());
+		let sessionKey = this.uniqueIdGenerator();
 
 		let serializedSessionData;
 		try {
@@ -90,8 +90,8 @@ export class RedisSessionStore {
 			return formattedReturn(null, true, 'Unable to stringify session data.');
 		}
 		await Promise.all([
-			this.redisClient.set(sessionKey, serializedSessionData),
-			this.redisClient.sAdd(getUserSessionKey(this.userSessionsPrefix, userId), sessionKey)
+			this.redisClient.set(getSessionKey(this.sessionPrefix, sessionKey), serializedSessionData, serializedSessionData),
+			this.redisClient.sAdd(getUserSessionKey(this.userSessionsPrefix, userId), getSessionKey(this.sessionPrefix, sessionKey))
 		]);
 		if (this.useTTL && this.ttlSeconds) {
 			await this.redisClient.expire(sessionKey, this.ttlSeconds);

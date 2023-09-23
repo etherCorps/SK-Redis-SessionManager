@@ -76,7 +76,7 @@ export class upstashSessionStore {
 		sessionData: any,
 		userId: string
 	): Promise<{ data: any; error: boolean; message: string }> => {
-		let sessionKey = getSessionKey(this.sessionPrefix, this.uniqueIdGenerator());
+		let sessionKey = this.uniqueIdGenerator();
 
 		let serializedSessionData;
 		try {
@@ -86,8 +86,8 @@ export class upstashSessionStore {
 			return formattedReturn(null, true, 'Unable to stringify session data.');
 		}
 		const redisPipeline = this.redisClient.pipeline();
-		redisPipeline.set(sessionKey, serializedSessionData);
-		redisPipeline.sadd(getUserSessionKey(this.userSessionsPrefix, userId), sessionKey);
+		redisPipeline.set(getSessionKey(this.sessionPrefix, sessionKey), serializedSessionData);
+		redisPipeline.sadd(getUserSessionKey(this.userSessionsPrefix, userId), getSessionKey(this.sessionPrefix, sessionKey));
 		if (this.useTTL && this.ttlSeconds) {
 			redisPipeline.expire(sessionKey, this.ttlSeconds);
 		}
