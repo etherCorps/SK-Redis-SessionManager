@@ -80,7 +80,7 @@ export class IoRedisSessionStore {
 		sessionData: any,
 		userId: string
 	): Promise<{ data: any; error: boolean; message: string }> => {
-		let sessionKey = getSessionKey(this.sessionPrefix, this.uniqueIdGenerator());
+		let sessionKey = this.uniqueIdGenerator();
 
 		let serializedSessionData;
 		try {
@@ -90,11 +90,10 @@ export class IoRedisSessionStore {
 			return formattedReturn(null, true, 'Unable to stringify session data.');
 		}
 		const redisPipeline = this.redisClient.pipeline();
-		redisPipeline.set(sessionKey, serializedSessionData);
-		redisPipeline.sadd(getUserSessionKey(this.userSessionsPrefix, userId), sessionKey);
-
+		redisPipeline.set(getSessionKey(this.sessionPrefix, sessionKey), serializedSessionData);
+		redisPipeline.sadd(getUserSessionKey(this.userSessionsPrefix, userId), getSessionKey(this.sessionPrefix, sessionKey));
 		if (this.useTTL && this.ttlSeconds) {
-			redisPipeline.expire(sessionKey, this.ttlSeconds);
+			redisPipeline.expire(getSessionKey(this.sessionPrefix, sessionKey), this.ttlSeconds);
 		}
 		await redisPipeline.exec();
 		if (this.signedCookies) {
