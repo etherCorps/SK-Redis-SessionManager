@@ -1,6 +1,9 @@
-import { IoRedisSessionStore, type ioRedisSessionOptions } from "@ethercorps/sveltekit-redis-session";
+import {
+	IoRedisSessionStore,
+	type ioRedisSessionOptions
+} from '@ethercorps/sveltekit-redis-session';
 import { SECRET, REDIS_URL } from '$env/static/private';
-import Redis from "ioredis";
+import Redis from 'ioredis';
 
 const sessionOptions: ioRedisSessionOptions = {
 	redisClient: new Redis(REDIS_URL),

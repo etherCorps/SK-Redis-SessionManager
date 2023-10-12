@@ -28,18 +28,18 @@ export class IoRedisSessionStore {
 	private readonly cookieOptions: CookieSerializeOptions;
 
 	constructor({
-					redisClient,
-					secret,
-					cookieName = 'session',
-					sessionPrefix = 'sk_ioredis_session',
-					userSessionsPrefix = 'sk_ioredis_user_sessions',
-					signed = true,
-					useTTL = true,
-					renewSessionBeforeExpire = false,
-					renewBeforeSeconds = defaultRenewBeforeSeconds,
-					serializer = JSON,
-					cookiesOptions = {}
-				}: ioRedisSessionOptions) {
+		redisClient,
+		secret,
+		cookieName = 'session',
+		sessionPrefix = 'sk_ioredis_session',
+		userSessionsPrefix = 'sk_ioredis_user_sessions',
+		signed = true,
+		useTTL = true,
+		renewSessionBeforeExpire = false,
+		renewBeforeSeconds = defaultRenewBeforeSeconds,
+		serializer = JSON,
+		cookiesOptions = {}
+	}: ioRedisSessionOptions) {
 		if (!redisClient) {
 			throw new Error('A pre-initiated redis client must be provided to the RedisStore');
 		}
@@ -180,7 +180,7 @@ export class IoRedisSessionStore {
 			const redisPipeline = this.redisClient.pipeline();
 			redisPipeline.del(prefixedSessionKey);
 			redisPipeline.srem(getUserSessionKey(this.userSessionsPrefix, userId), sessionId);
-			await redisPipeline.exec()
+			await redisPipeline.exec();
 		} else {
 			await this.redisClient.del(prefixedSessionKey);
 		}

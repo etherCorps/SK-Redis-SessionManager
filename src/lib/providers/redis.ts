@@ -28,18 +28,18 @@ export class RedisSessionStore {
 	private readonly cookieOptions: CookieSerializeOptions;
 
 	constructor({
-					redisClient,
-					secret,
-					cookieName = 'session',
-					sessionPrefix = 'sk_ioredis_session',
-					userSessionsPrefix = 'sk_ioredis_user_sessions',
-					signed = true,
-					useTTL = true,
-					renewSessionBeforeExpire = false,
-					renewBeforeSeconds = defaultRenewBeforeSeconds,
-					serializer = JSON,
-					cookiesOptions = {}
-				}: nodeRedisSessionOptions) {
+		redisClient,
+		secret,
+		cookieName = 'session',
+		sessionPrefix = 'sk_ioredis_session',
+		userSessionsPrefix = 'sk_ioredis_user_sessions',
+		signed = true,
+		useTTL = true,
+		renewSessionBeforeExpire = false,
+		renewBeforeSeconds = defaultRenewBeforeSeconds,
+		serializer = JSON,
+		cookiesOptions = {}
+	}: nodeRedisSessionOptions) {
 		if (!redisClient) {
 			throw new Error('A pre-initiated redis client must be provided to the RedisStore');
 		}
@@ -178,9 +178,9 @@ export class RedisSessionStore {
 			await Promise.all([
 				this.redisClient.del(prefixedSessionKey),
 				this.redisClient.sRem(getUserSessionKey(this.userSessionsPrefix, userId), sessionId)
-			])
+			]);
 		} else {
-			await this.redisClient.del( prefixedSessionKey );
+			await this.redisClient.del(prefixedSessionKey);
 		}
 		await this.deleteCookie(cookies);
 		return formattedReturn(sessionId, false, `Key successfully deleted`); // Returns unique key without prefix which is deleted from redis

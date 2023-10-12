@@ -24,7 +24,11 @@ export const actions: Actions = {
 			});
 		}
 
-		const {data, error, message } = await sessionManager.createSession( cookies, { email: formData.get( "email" ) }, '1' );
+		const { data, error, message } = await sessionManager.createSession(
+			cookies,
+			{ email: formData.get('email') },
+			'1'
+		);
 		if (error) {
 			console.log(message);
 			return fail(400, {
@@ -32,7 +36,7 @@ export const actions: Actions = {
 				message
 			});
 		}
-		console.log(data)
+		console.log(data);
 		return { success: true, message };
 	}
 };

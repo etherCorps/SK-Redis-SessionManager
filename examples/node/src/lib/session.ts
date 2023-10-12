@@ -1,8 +1,11 @@
-import { RedisSessionStore, type nodeRedisSessionOptions } from "@ethercorps/sveltekit-redis-session";
+import {
+	RedisSessionStore,
+	type nodeRedisSessionOptions
+} from '@ethercorps/sveltekit-redis-session';
 import { SECRET, REDIS_URL } from '$env/static/private';
-import {createClient} from "redis";
+import { createClient } from 'redis';
 
-const redisClient  = createClient( { url: REDIS_URL });
+const redisClient = createClient({ url: REDIS_URL });
 await redisClient.connect();
 
 const sessionOptions: nodeRedisSessionOptions = {
