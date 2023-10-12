@@ -32,18 +32,18 @@ export class upstashSessionStore {
 	private readonly cookieOptions: CookieSerializeOptions;
 
 	constructor({
-		redisClient,
-		secret,
-		cookieName = 'session',
-		sessionPrefix = 'sk_ioredis_session',
-		userSessionsPrefix = 'sk_ioredis_user_sessions',
-		signed = true,
-		useTTL = true,
-		renewSessionBeforeExpire = false,
-		renewBeforeSeconds = defaultRenewBeforeSeconds,
-		serializer = JSON,
-		cookiesOptions = {}
-	}: upstashRedisSessionOptions) {
+					redisClient,
+					secret,
+					cookieName = 'session',
+					sessionPrefix = 'sk_ioredis_session',
+					userSessionsPrefix = 'sk_ioredis_user_sessions',
+					signed = true,
+					useTTL = true,
+					renewSessionBeforeExpire = false,
+					renewBeforeSeconds = defaultRenewBeforeSeconds,
+					serializer = JSON,
+					cookiesOptions = {}
+				}: upstashRedisSessionOptions) {
 		if (!redisClient) {
 			throw new Error('A pre-initiated redis client must be provided to the RedisStore');
 		}
@@ -85,13 +85,16 @@ export class upstashSessionStore {
 			console.log('Error in Set Session while serializing', er);
 			return formattedReturn(null, true, 'Unable to stringify session data.');
 		}
+		const prefixedSessionKey = getSessionKey(this.sessionPrefix, sessionKey);
+
 		const redisPipeline = this.redisClient.pipeline();
-		redisPipeline.set(getSessionKey(this.sessionPrefix, sessionKey), serializedSessionData);
-		redisPipeline.sadd(getUserSessionKey(this.userSessionsPrefix, userId), getSessionKey(this.sessionPrefix, sessionKey));
+		redisPipeline.set(prefixedSessionKey, serializedSessionData);
+		redisPipeline.sadd(getUserSessionKey(this.userSessionsPrefix, userId), sessionKey);
 		if (this.useTTL && this.ttlSeconds) {
-			redisPipeline.expire(sessionKey, this.ttlSeconds);
+			redisPipeline.expire(prefixedSessionKey, this.ttlSeconds);
 		}
 		await redisPipeline.exec();
+
 		if (this.signedCookies) {
 			sessionKey = await signSessionKey(sessionKey, this.secret);
 		}
@@ -154,7 +157,7 @@ export class upstashSessionStore {
 	};
 	// till here
 
-	deleteSession = async (cookies: Cookies) => {
+	deleteSession = async (cookies: Cookies, userId = null) => {
 		const {
 			data: sessionId,
 			error,
@@ -164,8 +167,20 @@ export class upstashSessionStore {
 			console.log('Error in delSession method', message);
 			return formattedReturn(sessionId, error, 'Unable to validate key while deleting');
 		}
-		const deleteData = await this.redisClient.del(getSessionKey(this.sessionPrefix, sessionId));
-		if (!deleteData) return formattedReturn(null, true, `Key not found while deleting`);
+
+		const prefixedSessionKey = getSessionKey(this.sessionPrefix, sessionId);
+		const sessionData = await this.redisClient.get(prefixedSessionKey);
+		if (!sessionData) return formattedReturn(sessionId, true, `Not a valid session key`);
+
+		if (userId) {
+			const redisPipeline = this.redisClient.pipeline();
+			redisPipeline.del(prefixedSessionKey);
+			redisPipeline.srem(getUserSessionKey(this.userSessionsPrefix, userId), sessionId);
+			await redisPipeline.exec()
+		} else {
+			await this.redisClient.del(prefixedSessionKey);
+		}
+
 		await this.deleteCookie(cookies);
 		return formattedReturn(sessionId, false, `Key successfully deleted`); // Returns unique key without prefix which is deleted from redis
 	};
