@@ -112,13 +112,6 @@ export class upstashSessionStore {
 		const sessionData = await this.redisClient.get(getSessionKey(this.sessionPrefix, sessionId));
 		if (!sessionData)
 			return formattedReturn(null, true, `Unable to find data for the provided key - ${sessionId}`);
-		let parsedSession;
-		try {
-			parsedSession = this.serializer.parse(sessionData);
-		} catch (err) {
-			console.log(err);
-			return formattedReturn(null, true, 'Unable to parse the session data.');
-		}
 
 		if (this.renewSessionBeforeExpire) {
 			const sessionValidity = await this.redisClient.ttl(
@@ -131,7 +124,7 @@ export class upstashSessionStore {
 				}
 			}
 		}
-		return formattedReturn(parsedSession, false, 'Session Data'); // return session data
+		return formattedReturn(sessionData, false, 'Session Data'); // return session data
 	};
 
 	// From lucia auth & made my own changes
